@@ -1,0 +1,119 @@
+/* Tab bar */
+"Calculator" = "Calculator";
+"Recipes" = "Recipes";
+
+/* Segmented control */
+"Settings" = "Settings";
+"Result" = "Result";
+
+/* Navigation titles */
+"Save Recipe" = "Save Recipe";
+
+/* Toolbar buttons */
+"New" = "New";
+"Save" = "Save";
+"Cancel" = "Cancel";
+
+/* Section headers */
+"Dough Type" = "Dough Type";
+"Dough" = "Dough";
+"Ingredients" = "Ingredients";
+"Optional Ingredients" = "Optional Ingredients";
+"Fermentation" = "Fermentation";
+"Pre-ferment" = "Pre-ferment";
+"Notes" = "Notes";
+
+/* Form labels */
+"Portion Calculator" = "Portion Calculator";
+"Number of Pieces" = "Number of Pieces";
+"Weight per Piece" = "Weight per Piece";
+"Total Dough" = "Total Dough";
+"Dough Amount" = "Dough Amount";
+"Salt" = "Salt";
+"Yeast Type" = "Yeast Type";
+"Yeast Amount (auto)" = "Yeast Amount (auto)";
+"Yeast Amount" = "Yeast Amount";
+"More Ingredients" = "More Ingredients";
+"Sugar" = "Sugar";
+"Fat / Oil" = "Fat / Oil";
+"Refrigerator Fermentation" = "Refrigerator Fermentation";
+"In Refrigerator" = "In Refrigerator";
+"Acclimatization" = "Acclimatization";
+"Room Temperature" = "Room Temperature";
+"Temperature" = "Temperature";
+"Use Pre-ferment" = "Use Pre-ferment";
+"Type" = "Type";
+"Flour Share" = "Flour Share";
+"Yeast (Fresh)" = "Yeast (Fresh)";
+
+/* Result labels */
+"Flour" = "Flour";
+"Water" = "Water";
+"Fresh Yeast" = "Fresh Yeast";
+"Dry Yeast" = "Dry Yeast";
+"Instant Yeast" = "Instant Yeast";
+"Main Dough (Baking Day)" = "Main Dough (Baking Day)";
+"Refrigerator" = "Refrigerator";
+"Fermentation approx." = "Fermentation approx.";
+
+/* Recipes view */
+"No Recipes" = "No Recipes";
+"Save recipes via the calculator." = "Save recipes via the calculator.";
+"Name, dough type or note" = "Name, dough type or note";
+"Edit" = "Edit";
+"Delete" = "Delete";
+
+/* Text fields */
+"e.g. Pizza Dough" = "e.g. Pizza Dough";
+"New Recipe" = "New Recipe";
+
+/* Time formatting */
+"none" = "none";
+"days" = "days";
+
+/* Yeast types */
+"yeast.fresh" = "Fresh Yeast";
+"yeast.dry" = "Dry Yeast";
+"yeast.instant" = "Instant Yeast";
+
+/* Preferment types */
+"preferment.poolish" = "Poolish";
+"preferment.biga" = "Biga";
+"preferment.pateFermentee" = "Pâte fermentée";
+
+/* Dough types */
+"dough.custom" = "Custom";
+"dough.pizzaNeapolitan" = "Pizza Napoletana";
+"dough.pizzaRomana" = "Pizza al Taglio";
+"dough.brot" = "Rustic Bread";
+"dough.broetchen" = "Bread Rolls";
+"dough.baguette" = "Baguette";
+"dough.focaccia" = "Focaccia";
+"dough.brioche" = "Brioche";
+"dough.vollkorn" = "Whole Wheat Bread";
+
+/* Settings tab */
+"Language" = "Language";
+"System Language" = "System Language";
+"Units" = "Units";
+"Metric (g, °C)" = "Metric (g, °C)";
+"Imperial (oz, °F)" = "Imperial (oz, °F)";
+
+/* Language change alerts */
+"Restart Required" = "Restart Required";
+"language.restartMessage" = "Please restart the app for the language change to take effect.";
+"language.suggestImperial" = "The app will use English after the next restart. Switch units to Imperial (oz, °F) as well?";
+"language.suggestMetric" = "The app will use German after the next restart. Switch units to Metric (g, °C) as well?";
+"Switch to Imperial" = "Switch to Imperial";
+"Switch to Metric" = "Switch to Metric";
+"Keep Current Units" = "Keep Current Units";
+
+/* Baking tips */
+"tip.pizzaNeapolitan" = "Cold fermentation 24–72 h in the fridge. Bake at 430–500 °C.";
+"tip.pizzaRomana" = "Very soft dough – press onto an oiled sheet, do not roll.";
+"tip.brot" = "Start baking at 230 °C with steam, then reduce to 200 °C.";
+"tip.broetchen" = "Bake at 220 °C with plenty of steam – crispy crust.";
+"tip.baguette" = "Cold fermentation 12–24 h for best flavour. Bake with steam at 250 °C.";
+"tip.focaccia" = "Use plenty of olive oil – let rise in the oiled tin.";
+"tip.brioche" = "Incorporate cold butter in pieces – knead the dough for a very long time.";
+"tip.vollkorn" = "30 min. soaking time before kneading improves the dough structure.";

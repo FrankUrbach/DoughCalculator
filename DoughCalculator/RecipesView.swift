@@ -6,6 +6,7 @@ struct RecipesView: View {
     @Binding var calcTab: CalcTab
     @EnvironmentObject var store: RecipeStore
 
+    @AppStorage("unitSystem") private var unitSystem: UnitSystem = .metric
     @State private var searchText = ""
 
     private static let dateFormatter: DateFormatter = {
@@ -15,13 +16,13 @@ struct RecipesView: View {
         return f
     }()
 
-    // Gefilterte Rezepte: Suche über Name, Teigart und Notizen
+    // Gefilterte Rezepte: Suche über Name, Teigart (lokalisiert) und Notizen
     private var filteredRecipes: [DoughRecipe] {
         guard !searchText.isEmpty else { return store.recipes }
         let q = searchText.lowercased()
         return store.recipes.filter {
             $0.name.lowercased().contains(q)
-            || $0.doughType.rawValue.lowercased().contains(q)
+            || $0.doughType.localizedName.lowercased().contains(q)
             || $0.notes.lowercased().contains(q)
         }
     }
@@ -31,9 +32,9 @@ struct RecipesView: View {
             Group {
                 if store.recipes.isEmpty {
                     ContentUnavailableView(
-                        "Keine Rezepte",
+                        "No Recipes",
                         systemImage: "list.clipboard",
-                        description: Text("Speichere Rezepte über den Kalkulator.")
+                        description: Text("Save recipes via the calculator.")
                     )
                 } else if filteredRecipes.isEmpty {
                     ContentUnavailableView.search(text: searchText)
@@ -55,7 +56,7 @@ struct RecipesView: View {
                                     calcTab = .einstellungen
                                     mainTab = 0
                                 } label: {
-                                    Label("Bearbeiten", systemImage: "pencil")
+                                    Label("Edit", systemImage: "pencil")
                                 }
                                 .tint(.blue)
                             }
@@ -63,15 +64,15 @@ struct RecipesView: View {
                                 Button(role: .destructive) {
                                     delete(saved)
                                 } label: {
-                                    Label("Löschen", systemImage: "trash")
+                                    Label("Delete", systemImage: "trash")
                                 }
                             }
                         }
                     }
                 }
             }
-            .navigationTitle("Rezepte")
-            .searchable(text: $searchText, prompt: "Name, Teigart oder Notiz")
+            .navigationTitle("Recipes")
+            .searchable(text: $searchText, prompt: "Name, dough type or note")
         }
     }
 
@@ -93,7 +94,7 @@ struct RecipesView: View {
                     .foregroundStyle(.primary)
                     .fontWeight(.medium)
                 if saved.doughType != .custom {
-                    Text(saved.doughType.rawValue)
+                    Text(saved.doughType.localizedName)
                         .font(.caption2)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -105,15 +106,15 @@ struct RecipesView: View {
             // Kennzahlen-Zeile
             HStack(spacing: 14) {
                 if saved.usePortions {
-                    Label("\(saved.portionCount) × \(formatG(saved.portionWeight))",
+                    Label("\(saved.portionCount) × \(UnitFormatter.formatWeightCompact(saved.portionWeight, system: unitSystem))",
                           systemImage: "square.grid.2x2")
                 } else {
-                    Label(formatG(saved.effectiveDoughWeight), systemImage: "scalemass")
+                    Label(UnitFormatter.formatWeightCompact(saved.effectiveDoughWeight, system: unitSystem), systemImage: "scalemass")
                 }
                 Label("\(Int(saved.hydration)) %", systemImage: "drop")
-                Label(saved.yeastType.rawValue,    systemImage: "leaf")
+                Label(saved.yeastType.localizedName,    systemImage: "leaf")
                 if saved.usePreferment {
-                    Label(saved.prefermentType.rawValue, systemImage: "clock.badge.checkmark")
+                    Label(saved.prefermentType.localizedName, systemImage: "clock.badge.checkmark")
                 }
             }
             .font(.caption)
@@ -136,12 +137,6 @@ struct RecipesView: View {
         .padding(.vertical, 2)
     }
 
-    // MARK: - Formatierung
-
-    private func formatG(_ v: Double) -> String {
-        if v >= 1000 { return String(format: "%.1f kg", v / 1000) }
-        return String(format: "%.0f g", v)
-    }
 }
 
 #Preview {

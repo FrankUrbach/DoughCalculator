@@ -8,26 +8,44 @@ enum CalcTab {
 
 struct CalculatorView: View {
     @Binding var recipe:    DoughRecipe
-    @Binding var activeTab: CalcTab       // von ContentView verwaltet
+    @Binding var activeTab: CalcTab
     @EnvironmentObject var store: RecipeStore
+
+    @AppStorage("unitSystem") private var unitSystem: UnitSystem = .metric
 
     @State private var showSaveSheet = false
     @State private var showOptional  = false
 
     private var calc: DoughCalculation { DoughCalculation(recipe: recipe) }
 
-    /// Rezept ist bereits gespeichert → "Speichern"-Button statt Sheet-Icon zeigen
     private var isExistingRecipe: Bool {
         store.recipes.contains { $0.id == recipe.id }
     }
 
+    // MARK: - Weight input bindings (display ↔ internal grams)
+
+    private var portionWeightBinding: Binding<Double> {
+        Binding(
+            get: { UnitFormatter.gramsToDisplay(recipe.portionWeight, system: unitSystem) },
+            set: { recipe.portionWeight = UnitFormatter.displayToGrams($0, system: unitSystem) }
+        )
+    }
+
+    private var doughWeightBinding: Binding<Double> {
+        Binding(
+            get: { UnitFormatter.gramsToDisplay(recipe.doughWeight, system: unitSystem) },
+            set: { recipe.doughWeight = UnitFormatter.displayToGrams($0, system: unitSystem) }
+        )
+    }
+
+    // MARK: - Body
+
     var body: some View {
         NavigationStack {
             Form {
-                // Segmented Picker direkt unterhalb der Toolbar-Buttons
                 Picker("", selection: $activeTab) {
-                    Text("Einstellungen").tag(CalcTab.einstellungen)
-                    Text("Ergebnis").tag(CalcTab.ergebnis)
+                    Text("Settings").tag(CalcTab.einstellungen)
+                    Text("Result").tag(CalcTab.ergebnis)
                 }
                 .pickerStyle(.segmented)
                 .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
@@ -47,25 +65,21 @@ struct CalculatorView: View {
                     ergebnisSection
                 }
             }
-            .navigationTitle("Kalkulator")
+            .navigationTitle("Calculator")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Neu") {
+                    Button("New") {
                         recipe       = DoughRecipe()
                         showOptional = false
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 16) {
-                        // Vorhandenes Rezept: direkt speichern ohne Sheet
                         if isExistingRecipe {
-                            Button("Speichern") {
-                                store.save(recipe)
-                            }
-                            .fontWeight(.semibold)
+                            Button("Save") { store.save(recipe) }
+                                .fontWeight(.semibold)
                         }
-                        // Neues Rezept oder „Speichern unter": Sheet öffnen
                         Button { showSaveSheet = true } label: {
                             Image(systemName: isExistingRecipe
                                   ? "square.and.arrow.down.on.square"
@@ -77,20 +91,18 @@ struct CalculatorView: View {
             .sheet(isPresented: $showSaveSheet) {
                 SaveRecipeSheet(recipe: $recipe).environmentObject(store)
             }
-            // Wenn ein Rezept geladen wird, optionale Zutaten ggf. einblenden.
-            // Die Tab-Auswahl steuert ContentView über das Binding.
             .onChange(of: recipe.id) { _, _ in
                 showOptional = recipe.sugarPercentage > 0 || recipe.fatPercentage > 0
             }
         }
     }
 
-    // MARK: - Einstellungs-Sektionen
+    // MARK: - Settings sections
 
     @ViewBuilder private var teigartSection: some View {
         Section {
-            Picker("Teigart", selection: $recipe.doughType) {
-                ForEach(DoughType.allCases) { Text($0.rawValue).tag($0) }
+            Picker("Dough Type", selection: $recipe.doughType) {
+                ForEach(DoughType.allCases) { Text($0.localizedName).tag($0) }
             }
             .onChange(of: recipe.doughType) { _, newType in
                 if let preset = newType.preset {
@@ -105,49 +117,51 @@ struct CalculatorView: View {
                     .listRowBackground(Color.orange.opacity(0.07))
             }
         } header: {
-            Text("Teigart")
+            Text("Dough Type")
         }
     }
 
     @ViewBuilder private func teigSection(showHydration: Bool) -> some View {
-        Section("Teig") {
-            Toggle("Portionsrechner", isOn: $recipe.usePortions)
+        Section("Dough") {
+            Toggle("Portion Calculator", isOn: $recipe.usePortions)
 
             if recipe.usePortions {
                 Stepper(value: $recipe.portionCount, in: 1...99) {
                     HStack {
-                        Text("Anzahl Stücke")
+                        Text("Number of Pieces")
                         Spacer()
                         Text("\(recipe.portionCount)")
                             .foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
                 HStack {
-                    Text("Gewicht / Stück")
+                    Text("Weight per Piece")
                     Spacer()
-                    TextField("250", value: $recipe.portionWeight, format: .number)
+                    TextField("250", value: portionWeightBinding, format: .number)
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 80)
-                    Text("g").foregroundStyle(.secondary)
+                    Text(UnitFormatter.weightUnit(system: unitSystem))
+                        .foregroundStyle(.secondary)
                 }
                 HStack {
-                    Text("Teig gesamt")
+                    Text("Total Dough")
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(formatG(recipe.effectiveDoughWeight))
+                    Text(UnitFormatter.formatWeight(recipe.effectiveDoughWeight, system: unitSystem))
                         .foregroundStyle(.secondary).monospacedDigit()
                 }
                 .listRowBackground(Color.accentColor.opacity(0.06))
             } else {
                 HStack {
-                    Text("Teigmenge")
+                    Text("Dough Amount")
                     Spacer()
-                    TextField("600", value: $recipe.doughWeight, format: .number)
+                    TextField("600", value: doughWeightBinding, format: .number)
                         .keyboardType(.decimalPad)
                         .multilineTextAlignment(.trailing)
                         .frame(width: 80)
-                    Text("g").foregroundStyle(.secondary)
+                    Text(UnitFormatter.weightUnit(system: unitSystem))
+                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -158,49 +172,47 @@ struct CalculatorView: View {
     }
 
     @ViewBuilder private var zutatenSection: some View {
-        Section("Zutaten") {
-            pctStepper("Salz", value: $recipe.saltPercentage, in: 0...5, step: 0.1)
-            Picker("Hefetyp", selection: $recipe.yeastType) {
-                ForEach(YeastType.allCases) { Text($0.rawValue).tag($0) }
+        Section("Ingredients") {
+            pctStepper("Salt", value: $recipe.saltPercentage, in: 0...5, step: 0.1)
+            Picker("Yeast Type", selection: $recipe.yeastType) {
+                ForEach(YeastType.allCases) { Text($0.localizedName).tag($0) }
             }
             .onChange(of: recipe.yeastType) { _, _ in
                 if recipe.useColdFermentation { updateYeastForCold() }
             }
-            // Bei Kühlschrankgare: auto-berechneter Wert, nur lesend anzeigen
             if recipe.useColdFermentation {
                 HStack {
-                    Label("Hefemenge (auto)", systemImage: "lock")
+                    Label("Yeast Amount (auto)", systemImage: "lock")
                         .foregroundStyle(.secondary)
                     Spacer()
                     Text(formatPct(recipe.yeastPercentage))
                         .foregroundStyle(.secondary).monospacedDigit()
                 }
             } else {
-                pctStepper("Hefemenge", value: $recipe.yeastPercentage, in: 0.01...5, step: 0.1)
+                pctStepper("Yeast Amount", value: $recipe.yeastPercentage, in: 0.01...5, step: 0.1)
             }
-            Toggle("Weitere Zutaten", isOn: $showOptional)
+            Toggle("More Ingredients", isOn: $showOptional)
         }
     }
 
     @ViewBuilder private var optionalSection: some View {
-        Section("Optionale Zutaten") {
-            pctStepper("Zucker",    value: $recipe.sugarPercentage, in: 0...20)
-            pctStepper("Fett / Öl", value: $recipe.fatPercentage,   in: 0...50)
+        Section("Optional Ingredients") {
+            pctStepper("Sugar",     value: $recipe.sugarPercentage, in: 0...20)
+            pctStepper("Fat / Oil", value: $recipe.fatPercentage,   in: 0...50)
         }
     }
 
     @ViewBuilder private var gaerungSection: some View {
-        Section("Gärung") {
-            Toggle("Kühlschrankgare", isOn: $recipe.useColdFermentation)
+        Section("Fermentation") {
+            Toggle("Refrigerator Fermentation", isOn: $recipe.useColdFermentation)
                 .onChange(of: recipe.useColdFermentation) { _, enabled in
                     if enabled { updateYeastForCold() }
                 }
 
             if recipe.useColdFermentation {
-                // Dauer im Kühlschrank (≈ 4 °C)
                 Stepper(value: $recipe.coldFermentationHours, in: 3...168, step: 3) {
                     HStack {
-                        Label("Im Kühlschrank", systemImage: "snowflake")
+                        Label("In Refrigerator", systemImage: "snowflake")
                         Spacer()
                         Text(formatHours(recipe.coldFermentationHours))
                             .foregroundStyle(.secondary).monospacedDigit()
@@ -208,13 +220,12 @@ struct CalculatorView: View {
                 }
                 .onChange(of: recipe.coldFermentationHours) { _, _ in updateYeastForCold() }
 
-                // Akklimatisierung bei Raumtemperatur
                 Stepper(value: $recipe.warmPhaseHours, in: 0...12, step: 0.5) {
                     HStack {
-                        Label("Akklimatisierung", systemImage: "thermometer.medium")
+                        Label("Acclimatization", systemImage: "thermometer.medium")
                         Spacer()
                         if recipe.warmPhaseHours == 0 {
-                            Text("keine").foregroundStyle(.secondary)
+                            Text("none").foregroundStyle(.secondary)
                         } else {
                             Text(formatHours(recipe.warmPhaseHours))
                                 .foregroundStyle(.secondary).monospacedDigit()
@@ -223,12 +234,11 @@ struct CalculatorView: View {
                 }
                 .onChange(of: recipe.warmPhaseHours) { _, _ in updateYeastForCold() }
 
-                // Raumtemperatur (für Akklimatisierung & Hefemengen-Berechnung)
                 Stepper(value: $recipe.fermentationTemperature, in: 15...30, step: 1) {
                     HStack {
-                        Text("Raumtemperatur")
+                        Text("Room Temperature")
                         Spacer()
-                        Text("\(Int(recipe.fermentationTemperature)) °C")
+                        Text(UnitFormatter.formatTemperature(recipe.fermentationTemperature, system: unitSystem))
                             .foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
@@ -237,69 +247,70 @@ struct CalculatorView: View {
             } else {
                 Stepper(value: $recipe.fermentationTemperature, in: 1...40, step: 1) {
                     HStack {
-                        Text("Temperatur")
+                        Text("Temperature")
                         Spacer()
-                        Text("\(Int(recipe.fermentationTemperature)) °C")
+                        Text(UnitFormatter.formatTemperature(recipe.fermentationTemperature, system: unitSystem))
                             .foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
             }
 
-            Toggle("Vorteig verwenden", isOn: $recipe.usePreferment)
+            Toggle("Use Pre-ferment", isOn: $recipe.usePreferment)
         }
     }
 
     @ViewBuilder private var vorteigSection: some View {
-        Section("Vorteig") {
-            Picker("Typ", selection: $recipe.prefermentType) {
-                ForEach(PrefermentType.allCases) { Text($0.rawValue).tag($0) }
+        Section("Pre-ferment") {
+            Picker("Type", selection: $recipe.prefermentType) {
+                ForEach(PrefermentType.allCases) { Text($0.localizedName).tag($0) }
             }
             .onChange(of: recipe.prefermentType) { _, new in
                 recipe.prefermentHydration = new.defaultHydration
             }
-            pctStepper("Mehlanteil",    value: $recipe.prefermentFlourPercentage, in: 10...80,  step: 5)
-            pctStepper("Hydration",     value: $recipe.prefermentHydration,       in: 40...150)
-            pctStepper("Hefe (Frisch)", value: $recipe.prefermentYeastPercentage, in: 0.01...1, step: 0.05)
+            pctStepper("Flour Share",    value: $recipe.prefermentFlourPercentage, in: 10...80,  step: 5)
+            pctStepper("Hydration",      value: $recipe.prefermentHydration,       in: 40...150)
+            pctStepper("Yeast (Fresh)",  value: $recipe.prefermentYeastPercentage, in: 0.01...1, step: 0.05)
         }
     }
 
-    // MARK: - Ergebnis-Sektion
+    // MARK: - Result section
 
     @ViewBuilder private var ergebnisSection: some View {
         if recipe.usePreferment {
-            Section("Vorteig: \(recipe.prefermentType.rawValue)") {
-                resultRow("Mehl",       calc.prefermentFlourWeight)
-                resultRow("Wasser",     calc.prefermentWaterWeight)
-                resultRow("Frischhefe", calc.prefermentYeastWeight)
+            let header = "\(String(localized: "Pre-ferment")): \(recipe.prefermentType.localizedName)"
+            Section(header) {
+                resultRow("Flour",       calc.prefermentFlourWeight)
+                resultRow("Water",       calc.prefermentWaterWeight)
+                resultRow("Fresh Yeast", calc.prefermentYeastWeight)
             }
-            Section("Hauptteig (Backtag)") {
-                resultRow("Mehl",   calc.mainDoughFlour)
-                resultRow("Wasser", calc.mainDoughWater)
+            Section("Main Dough (Baking Day)") {
+                resultRow("Flour",   calc.mainDoughFlour)
+                resultRow("Water",   calc.mainDoughWater)
                 switch recipe.yeastType {
-                case .fresh:   resultRow("Frischhefe",  calc.mainDoughYeastFresh)
-                case .dry:     resultRow("Trockenhefe", calc.mainDoughYeastDry)
-                case .instant: resultRow("Instanthefe", calc.mainDoughYeastInstant)
+                case .fresh:   resultRow("Fresh Yeast",  calc.mainDoughYeastFresh)
+                case .dry:     resultRow("Dry Yeast",    calc.mainDoughYeastDry)
+                case .instant: resultRow("Instant Yeast", calc.mainDoughYeastInstant)
                 }
-                resultRow("Salz", calc.saltWeight)
-                if recipe.sugarPercentage > 0 { resultRow("Zucker",    calc.sugarWeight) }
-                if recipe.fatPercentage   > 0 { resultRow("Fett / Öl", calc.fatWeight)   }
+                resultRow("Salt", calc.saltWeight)
+                if recipe.sugarPercentage > 0 { resultRow("Sugar",     calc.sugarWeight) }
+                if recipe.fatPercentage   > 0 { resultRow("Fat / Oil", calc.fatWeight) }
             }
             Section {
                 totalRow
                 fermentationRow
             }
         } else {
-            Section("Ergebnis") {
-                resultRow("Mehl",   calc.flourWeight)
-                resultRow("Wasser", calc.waterWeight)
+            Section("Result") {
+                resultRow("Flour",   calc.flourWeight)
+                resultRow("Water",   calc.waterWeight)
                 switch recipe.yeastType {
-                case .fresh:   resultRow("Frischhefe",  calc.yeastAmount(as: .fresh))
-                case .dry:     resultRow("Trockenhefe", calc.yeastAmount(as: .dry))
-                case .instant: resultRow("Instanthefe", calc.yeastAmount(as: .instant))
+                case .fresh:   resultRow("Fresh Yeast",  calc.yeastAmount(as: .fresh))
+                case .dry:     resultRow("Dry Yeast",    calc.yeastAmount(as: .dry))
+                case .instant: resultRow("Instant Yeast", calc.yeastAmount(as: .instant))
                 }
-                resultRow("Salz", calc.saltWeight)
-                if recipe.sugarPercentage > 0 { resultRow("Zucker",    calc.sugarWeight) }
-                if recipe.fatPercentage   > 0 { resultRow("Fett / Öl", calc.fatWeight)   }
+                resultRow("Salt", calc.saltWeight)
+                if recipe.sugarPercentage > 0 { resultRow("Sugar",     calc.sugarWeight) }
+                if recipe.fatPercentage   > 0 { resultRow("Fat / Oil", calc.fatWeight) }
                 totalRow
                 fermentationRow
             }
@@ -308,17 +319,17 @@ struct CalculatorView: View {
 
     @ViewBuilder private var totalRow: some View {
         HStack {
-            Text("Teig gesamt").fontWeight(.semibold)
+            Text("Total Dough").fontWeight(.semibold)
             Spacer()
             if recipe.usePortions {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(formatG(recipe.effectiveDoughWeight))
+                    Text(UnitFormatter.formatWeight(recipe.effectiveDoughWeight, system: unitSystem))
                         .fontWeight(.semibold).monospacedDigit()
-                    Text("\(recipe.portionCount) × \(formatG(recipe.portionWeight))")
+                    Text("\(recipe.portionCount) × \(UnitFormatter.formatWeight(recipe.portionWeight, system: unitSystem))")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             } else {
-                Text(formatG(recipe.effectiveDoughWeight))
+                Text(UnitFormatter.formatWeight(recipe.effectiveDoughWeight, system: unitSystem))
                     .fontWeight(.semibold).monospacedDigit()
             }
         }
@@ -327,14 +338,14 @@ struct CalculatorView: View {
     @ViewBuilder private var fermentationRow: some View {
         if recipe.useColdFermentation {
             HStack {
-                Label("Kühlschrank", systemImage: "snowflake")
+                Label("Refrigerator", systemImage: "snowflake")
                 Spacer()
                 Text(formatHours(recipe.coldFermentationHours))
                     .foregroundStyle(.cyan).monospacedDigit()
             }
             if recipe.warmPhaseHours > 0 {
                 HStack {
-                    Label("Akklimatisierung", systemImage: "thermometer.medium")
+                    Label("Acclimatization", systemImage: "thermometer.medium")
                     Spacer()
                     Text(formatHours(recipe.warmPhaseHours))
                         .foregroundStyle(.orange).monospacedDigit()
@@ -342,7 +353,7 @@ struct CalculatorView: View {
             }
         } else {
             HStack {
-                Label("Gärzeit ca.", systemImage: "timer")
+                Label("Fermentation approx.", systemImage: "timer")
                 Spacer()
                 Text(calc.estimatedFermentationFormatted)
                     .foregroundStyle(.orange).monospacedDigit()
@@ -350,18 +361,19 @@ struct CalculatorView: View {
         }
     }
 
-    // MARK: - Hilfs-Views
+    // MARK: - Helper views
 
-    private func resultRow(_ label: String, _ value: Double) -> some View {
+    private func resultRow(_ label: LocalizedStringKey, _ value: Double) -> some View {
         HStack {
             Text(label)
             Spacer()
-            Text(formatG(value)).foregroundStyle(.secondary).monospacedDigit()
+            Text(UnitFormatter.formatWeight(value, system: unitSystem))
+                .foregroundStyle(.secondary).monospacedDigit()
         }
     }
 
     private func pctStepper(
-        _ label: String,
+        _ label: LocalizedStringKey,
         value: Binding<Double>,
         in range: ClosedRange<Double>,
         step: Double = 1
@@ -376,9 +388,8 @@ struct CalculatorView: View {
         }
     }
 
-    // MARK: - Kühlschrankgare
+    // MARK: - Cold fermentation
 
-    /// Hefemenge aus cold-fermentation-Parametern neu berechnen und im Rezept setzen.
     private func updateYeastForCold() {
         let freshPct = DoughCalculation(recipe: recipe).recommendedFreshYeastPercent
         switch recipe.yeastType {
@@ -388,6 +399,8 @@ struct CalculatorView: View {
         }
     }
 
+    // MARK: - Formatting
+
     private func formatHours(_ h: Double) -> String {
         if h < 24 {
             let hInt = Int(h)
@@ -395,16 +408,9 @@ struct CalculatorView: View {
             return mInt > 0 ? "\(hInt)h \(mInt)min" : "\(hInt)h"
         }
         let days = h / 24
-        return days == floor(days) ? "\(Int(days)) Tage" : String(format: "%.1f Tage", days)
-    }
-
-    // MARK: - Formatierung
-
-    private func formatG(_ v: Double) -> String {
-        if v >= 1000 { return String(format: "%.2f kg", v / 1000) }
-        if v < 0.1   { return String(format: "%.3f g", v) }
-        if v < 10    { return String(format: "%.2f g", v) }
-        return String(format: "%.1f g", v)
+        return days == floor(days)
+            ? "\(Int(days)) \(String(localized: "days"))"
+            : String(format: "%.1f \(String(localized: "days"))", days)
     }
 
     private func formatPct(_ v: Double) -> String {
@@ -412,7 +418,7 @@ struct CalculatorView: View {
     }
 }
 
-// MARK: - Rezept speichern / umbenennen
+// MARK: - Save / rename sheet
 
 struct SaveRecipeSheet: View {
     @Binding var recipe: DoughRecipe
@@ -424,22 +430,22 @@ struct SaveRecipeSheet: View {
         NavigationStack {
             Form {
                 Section("Name") {
-                    TextField("z.B. Pizzateig", text: $name)
+                    TextField("e.g. Pizza Dough", text: $name)
                 }
-                Section("Notizen") {
+                Section("Notes") {
                     TextField("Optional", text: $recipe.notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
             }
-            .navigationTitle("Rezept speichern")
+            .navigationTitle("Save Recipe")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Abbrechen") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Speichern") {
-                        recipe.name = name.isEmpty ? "Neues Rezept" : name
+                    Button("Save") {
+                        recipe.name = name.isEmpty ? String(localized: "New Recipe") : name
                         store.save(recipe)
                         dismiss()
                     }

@@ -7,6 +7,13 @@ enum YeastType: String, Codable, CaseIterable, Identifiable {
     case dry     = "Trockenhefe"
     case instant = "Instanthefe"
     var id: String { rawValue }
+    var localizedName: String {
+        switch self {
+        case .fresh:   return String(localized: "yeast.fresh")
+        case .dry:     return String(localized: "yeast.dry")
+        case .instant: return String(localized: "yeast.instant")
+        }
+    }
 }
 
 enum PrefermentType: String, Codable, CaseIterable, Identifiable {
@@ -14,6 +21,13 @@ enum PrefermentType: String, Codable, CaseIterable, Identifiable {
     case biga          = "Biga"
     case pateFermentee = "Pâte fermentée"
     var id: String { rawValue }
+    var localizedName: String {
+        switch self {
+        case .poolish:       return String(localized: "preferment.poolish")
+        case .biga:          return String(localized: "preferment.biga")
+        case .pateFermentee: return String(localized: "preferment.pateFermentee")
+        }
+    }
 
     var defaultHydration: Double {
         switch self {
@@ -50,6 +64,19 @@ enum DoughType: String, Codable, CaseIterable, Identifiable {
     case vollkorn        = "Vollkornbrot"
 
     var id: String { rawValue }
+    var localizedName: String {
+        switch self {
+        case .custom:          return String(localized: "dough.custom")
+        case .pizzaNeapolitan: return String(localized: "dough.pizzaNeapolitan")
+        case .pizzaRomana:     return String(localized: "dough.pizzaRomana")
+        case .brot:            return String(localized: "dough.brot")
+        case .broetchen:       return String(localized: "dough.broetchen")
+        case .baguette:        return String(localized: "dough.baguette")
+        case .focaccia:        return String(localized: "dough.focaccia")
+        case .brioche:         return String(localized: "dough.brioche")
+        case .vollkorn:        return String(localized: "dough.vollkorn")
+        }
+    }
 
     var preset: DoughPreset? {
         switch self {
@@ -60,56 +87,56 @@ enum DoughType: String, Codable, CaseIterable, Identifiable {
                 hydration: 62, saltPercentage: 2.8, yeastPercentage: 0.1, yeastType: .fresh,
                 sugarPercentage: 0, fatPercentage: 0, fermentationTemperature: 8,
                 defaultPortionWeight: 270,
-                tip: "Kalte Gärung 24–72 h im Kühlschrank. Bei 430–500 °C backen."
+                tip: String(localized: "tip.pizzaNeapolitan")
             )
         case .pizzaRomana:
             return DoughPreset(
                 hydration: 80, saltPercentage: 2.5, yeastPercentage: 0.2, yeastType: .fresh,
                 sugarPercentage: 0, fatPercentage: 3, fermentationTemperature: 10,
                 defaultPortionWeight: 350,
-                tip: "Sehr weicher Teig – auf geöltes Blech drücken, nicht rollen."
+                tip: String(localized: "tip.pizzaRomana")
             )
         case .brot:
             return DoughPreset(
                 hydration: 68, saltPercentage: 1.8, yeastPercentage: 1.5, yeastType: .fresh,
                 sugarPercentage: 0, fatPercentage: 0, fermentationTemperature: 22,
                 defaultPortionWeight: 750,
-                tip: "Bei 230 °C mit Dampf anbacken, dann auf 200 °C reduzieren."
+                tip: String(localized: "tip.brot")
             )
         case .broetchen:
             return DoughPreset(
                 hydration: 58, saltPercentage: 1.8, yeastPercentage: 2.5, yeastType: .fresh,
                 sugarPercentage: 2, fatPercentage: 3, fermentationTemperature: 22,
                 defaultPortionWeight: 80,
-                tip: "Bei 220 °C mit kräftigem Schwaden backen – knusprige Kruste."
+                tip: String(localized: "tip.broetchen")
             )
         case .baguette:
             return DoughPreset(
                 hydration: 72, saltPercentage: 1.8, yeastPercentage: 0.3, yeastType: .fresh,
                 sugarPercentage: 0, fatPercentage: 0, fermentationTemperature: 10,
                 defaultPortionWeight: 300,
-                tip: "Kalte Gärung 12–24 h für bestes Aroma. Mit Dampf bei 250 °C backen."
+                tip: String(localized: "tip.baguette")
             )
         case .focaccia:
             return DoughPreset(
                 hydration: 80, saltPercentage: 2.0, yeastPercentage: 1.0, yeastType: .fresh,
                 sugarPercentage: 0, fatPercentage: 5, fermentationTemperature: 22,
                 defaultPortionWeight: 800,
-                tip: "Großzügig Olivenöl verwenden – in der geölten Form gehen lassen."
+                tip: String(localized: "tip.focaccia")
             )
         case .brioche:
             return DoughPreset(
                 hydration: 55, saltPercentage: 1.5, yeastPercentage: 3.0, yeastType: .fresh,
                 sugarPercentage: 10, fatPercentage: 30, fermentationTemperature: 20,
                 defaultPortionWeight: 500,
-                tip: "Kalte Butter in Stücken einarbeiten – Teig sehr lange kneten."
+                tip: String(localized: "tip.brioche")
             )
         case .vollkorn:
             return DoughPreset(
                 hydration: 75, saltPercentage: 1.8, yeastPercentage: 2.0, yeastType: .fresh,
                 sugarPercentage: 1, fatPercentage: 0, fermentationTemperature: 22,
                 defaultPortionWeight: 750,
-                tip: "30 Min. Quellzeit vor dem Kneten verbessert die Teigstruktur."
+                tip: String(localized: "tip.vollkorn")
             )
         }
     }
@@ -119,7 +146,7 @@ enum DoughType: String, Codable, CaseIterable, Identifiable {
 
 struct DoughRecipe: Codable, Identifiable, Equatable {
     var id = UUID()
-    var name = "Neues Rezept"
+    var name = String(localized: "New Recipe")
 
     // Teigart
     var doughType: DoughType = .custom
@@ -189,7 +216,7 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id          = (try? c.decodeIfPresent(UUID.self,   forKey: .id))   ?? UUID()
-        name        = (try? c.decodeIfPresent(String.self, forKey: .name)) ?? "Neues Rezept"
+        name        = (try? c.decodeIfPresent(String.self, forKey: .name)) ?? String(localized: "New Recipe")
         doughType   = (try? c.decodeIfPresent(DoughType.self, forKey: .doughType)) ?? .custom
         usePortions = (try? c.decodeIfPresent(Bool.self,   forKey: .usePortions))  ?? false
         portionCount  = (try? c.decodeIfPresent(Int.self,    forKey: .portionCount))  ?? 4
@@ -272,11 +299,11 @@ struct DoughCalculation {
 
     var estimatedFermentationFormatted: String {
         let h = estimatedFermentationHours
-        if h < 1 { return "\(Int(h * 60)) Min" }
+        if h < 1 { return "\(Int(h * 60)) min" }
         let hours = Int(h)
         let mins  = Int((h - Double(hours)) * 60)
         if h < 48 { return mins > 0 ? "\(hours)h \(mins)min" : "\(hours)h" }
-        return String(format: "%.1f Tage", h / 24)
+        return String(format: "%.1f \(String(localized: "days"))", h / 24)
     }
 
     // MARK: Vorteig

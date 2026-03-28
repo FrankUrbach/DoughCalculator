@@ -9,12 +9,16 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $mainTab) {
             CalculatorView(recipe: $recipe, activeTab: $calcTab)
-                .tabItem { Label("Kalkulator", systemImage: "scalemass.fill") }
+                .tabItem { Label("Calculator", systemImage: "scalemass.fill") }
                 .tag(0)
 
             RecipesView(recipe: $recipe, mainTab: $mainTab, calcTab: $calcTab)
-                .tabItem { Label("Rezepte", systemImage: "list.clipboard.fill") }
+                .tabItem { Label("Recipes", systemImage: "list.clipboard.fill") }
                 .tag(1)
+
+            SettingsView()
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tag(2)
         }
         .environmentObject(store)
     }

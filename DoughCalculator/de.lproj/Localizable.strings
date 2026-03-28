@@ -1,0 +1,119 @@
+/* Tab bar */
+"Calculator" = "Kalkulator";
+"Recipes" = "Rezepte";
+
+/* Segmented control */
+"Settings" = "Einstellungen";
+"Result" = "Ergebnis";
+
+/* Navigation titles */
+"Save Recipe" = "Rezept speichern";
+
+/* Toolbar buttons */
+"New" = "Neu";
+"Save" = "Speichern";
+"Cancel" = "Abbrechen";
+
+/* Section headers */
+"Dough Type" = "Teigart";
+"Dough" = "Teig";
+"Ingredients" = "Zutaten";
+"Optional Ingredients" = "Optionale Zutaten";
+"Fermentation" = "Gärung";
+"Pre-ferment" = "Vorteig";
+"Notes" = "Notizen";
+
+/* Form labels */
+"Portion Calculator" = "Portionsrechner";
+"Number of Pieces" = "Anzahl Stücke";
+"Weight per Piece" = "Gewicht / Stück";
+"Total Dough" = "Teig gesamt";
+"Dough Amount" = "Teigmenge";
+"Salt" = "Salz";
+"Yeast Type" = "Hefetyp";
+"Yeast Amount (auto)" = "Hefemenge (auto)";
+"Yeast Amount" = "Hefemenge";
+"More Ingredients" = "Weitere Zutaten";
+"Sugar" = "Zucker";
+"Fat / Oil" = "Fett / Öl";
+"Refrigerator Fermentation" = "Kühlschrankgare";
+"In Refrigerator" = "Im Kühlschrank";
+"Acclimatization" = "Akklimatisierung";
+"Room Temperature" = "Raumtemperatur";
+"Temperature" = "Temperatur";
+"Use Pre-ferment" = "Vorteig verwenden";
+"Type" = "Typ";
+"Flour Share" = "Mehlanteil";
+"Yeast (Fresh)" = "Hefe (Frisch)";
+
+/* Result labels */
+"Flour" = "Mehl";
+"Water" = "Wasser";
+"Fresh Yeast" = "Frischhefe";
+"Dry Yeast" = "Trockenhefe";
+"Instant Yeast" = "Instanthefe";
+"Main Dough (Baking Day)" = "Hauptteig (Backtag)";
+"Refrigerator" = "Kühlschrank";
+"Fermentation approx." = "Gärzeit ca.";
+
+/* Recipes view */
+"No Recipes" = "Keine Rezepte";
+"Save recipes via the calculator." = "Speichere Rezepte über den Kalkulator.";
+"Name, dough type or note" = "Name, Teigart oder Notiz";
+"Edit" = "Bearbeiten";
+"Delete" = "Löschen";
+
+/* Text fields */
+"e.g. Pizza Dough" = "z.B. Pizzateig";
+"New Recipe" = "Neues Rezept";
+
+/* Time formatting */
+"none" = "keine";
+"days" = "Tage";
+
+/* Yeast types */
+"yeast.fresh" = "Frischhefe";
+"yeast.dry" = "Trockenhefe";
+"yeast.instant" = "Instanthefe";
+
+/* Preferment types */
+"preferment.poolish" = "Poolish";
+"preferment.biga" = "Biga";
+"preferment.pateFermentee" = "Pâte fermentée";
+
+/* Dough types */
+"dough.custom" = "Benutzerdefiniert";
+"dough.pizzaNeapolitan" = "Pizza Napoletana";
+"dough.pizzaRomana" = "Pizza al Taglio";
+"dough.brot" = "Rustikales Brot";
+"dough.broetchen" = "Brötchen";
+"dough.baguette" = "Baguette";
+"dough.focaccia" = "Focaccia";
+"dough.brioche" = "Brioche";
+"dough.vollkorn" = "Vollkornbrot";
+
+/* Settings tab */
+"Language" = "Sprache";
+"System Language" = "Systemsprache";
+"Units" = "Einheiten";
+"Metric (g, °C)" = "Metrisch (g, °C)";
+"Imperial (oz, °F)" = "Imperial (oz, °F)";
+
+/* Language change alerts */
+"Restart Required" = "Neustart erforderlich";
+"language.restartMessage" = "Bitte starte die App neu, damit die Sprachänderung wirksam wird.";
+"language.suggestImperial" = "Die App wird nach dem Neustart auf Englisch umgestellt. Einheiten auch auf Imperial (oz, °F) umstellen?";
+"language.suggestMetric" = "Die App wird nach dem Neustart auf Deutsch umgestellt. Einheiten auch auf Metrisch (g, °C) umstellen?";
+"Switch to Imperial" = "Zu Imperial wechseln";
+"Switch to Metric" = "Zu Metrisch wechseln";
+"Keep Current Units" = "Einheiten beibehalten";
+
+/* Baking tips */
+"tip.pizzaNeapolitan" = "Kalte Gärung 24–72 h im Kühlschrank. Bei 430–500 °C backen.";
+"tip.pizzaRomana" = "Sehr weicher Teig – auf geöltes Blech drücken, nicht rollen.";
+"tip.brot" = "Bei 230 °C mit Dampf anbacken, dann auf 200 °C reduzieren.";
+"tip.broetchen" = "Bei 220 °C mit kräftigem Schwaden backen – knusprige Kruste.";
+"tip.baguette" = "Kalte Gärung 12–24 h für bestes Aroma. Mit Dampf bei 250 °C backen.";
+"tip.focaccia" = "Großzügig Olivenöl verwenden – in der geölten Form gehen lassen.";
+"tip.brioche" = "Kalte Butter in Stücken einarbeiten – Teig sehr lange kneten.";
+"tip.vollkorn" = "30 Min. Quellzeit vor dem Kneten verbessert die Teigstruktur.";
