@@ -42,50 +42,58 @@ struct CalculatorView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
+            VStack(spacing: 0) {
+                HStack {
+                    Button("New") {
+                        recipe       = DoughRecipe()
+                        showOptional = false
+                    }
+                    .buttonStyle(.bordered)
+                    Spacer()
+                    if isExistingRecipe {
+                        Button("Save") { store.save(recipe) }
+                            .buttonStyle(.bordered)
+                            .fontWeight(.semibold)
+                    }
+                    Button("Save") { showSaveSheet = true }
+                        .buttonStyle(.borderedProminent)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+
                 Picker("", selection: $activeTab) {
                     Text("Settings").tag(CalcTab.einstellungen)
                     Text("Result").tag(CalcTab.ergebnis)
                 }
                 .pickerStyle(.segmented)
-                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                .listRowBackground(Color.clear)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
 
-                switch activeTab {
-                case .einstellungen:
-                    teigartSection
-                    teigSection(showHydration: true)
-                    zutatenSection
-                    if showOptional { optionalSection }
-                    gaerungSection
-                    if recipe.usePreferment { vorteigSection }
+                Divider()
 
-                case .ergebnis:
-                    teigSection(showHydration: false)
-                    ergebnisSection
+                Form {
+                    switch activeTab {
+                    case .einstellungen:
+                        teigartSection
+                        teigSection(showHydration: true)
+                        zutatenSection
+                        if showOptional { optionalSection }
+                        gaerungSection
+                        if recipe.usePreferment { vorteigSection }
+
+                    case .ergebnis:
+                        teigSection(showHydration: false)
+                        ergebnisSection
+                    }
                 }
             }
-            .navigationTitle("Calculator")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("New") {
-                        recipe       = DoughRecipe()
-                        showOptional = false
-                    }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 16) {
-                        if isExistingRecipe {
-                            Button("Save") { store.save(recipe) }
-                                .fontWeight(.semibold)
-                        }
-                        Button { showSaveSheet = true } label: {
-                            Image(systemName: isExistingRecipe
-                                  ? "square.and.arrow.down.on.square"
-                                  : "square.and.arrow.down")
-                        }
-                    }
+                ToolbarItem(placement: .principal) {
+                    Text("Calculator")
+                        .font(.largeTitle)
+                        .fontWeight(.semibold)
                 }
             }
             .sheet(isPresented: $showSaveSheet) {
