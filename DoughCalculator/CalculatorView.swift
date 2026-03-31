@@ -13,8 +13,9 @@ struct CalculatorView: View {
 
     @AppStorage("unitSystem") private var unitSystem: UnitSystem = .metric
 
-    @State private var showSaveSheet = false
-    @State private var showOptional  = false
+    @State private var showSaveSheet    = false
+    @State private var showSaveOptions  = false
+    @State private var showOptional     = false
 
     private var calc: DoughCalculation { DoughCalculation(recipe: recipe) }
 
@@ -50,13 +51,15 @@ struct CalculatorView: View {
                     }
                     .buttonStyle(.bordered)
                     Spacer()
-                    if isExistingRecipe {
-                        Button("Save") { store.save(recipe) }
-                            .buttonStyle(.bordered)
-                            .fontWeight(.semibold)
+                    Button("Save") {
+                        if isExistingRecipe {
+                            showSaveOptions = true
+                        } else {
+                            showSaveSheet = true
+                        }
                     }
-                    Button("Save") { showSaveSheet = true }
-                        .buttonStyle(.borderedProminent)
+                    .buttonStyle(.borderedProminent)
+                    .fontWeight(.semibold)
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
@@ -95,6 +98,13 @@ struct CalculatorView: View {
                         .font(.largeTitle)
                         .fontWeight(.semibold)
                 }
+            }
+            .confirmationDialog("Save Recipe", isPresented: $showSaveOptions, titleVisibility: .visible) {
+                Button("save.overwrite") { store.save(recipe) }
+                Button("save.asNew")    { showSaveSheet = true }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("save.overwriteOrNew")
             }
             .sheet(isPresented: $showSaveSheet) {
                 SaveRecipeSheet(recipe: $recipe).environmentObject(store)

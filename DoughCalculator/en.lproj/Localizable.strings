@@ -14,6 +14,11 @@
 "Save" = "Save";
 "Cancel" = "Cancel";
 
+/* Save dialog */
+"save.overwriteOrNew" = "Overwrite the existing recipe or save it under a new name?";
+"save.overwrite" = "Overwrite";
+"save.asNew" = "Save as New Recipe";
+
 /* Section headers */
 "Dough Type" = "Dough Type";
 "Dough" = "Dough";
