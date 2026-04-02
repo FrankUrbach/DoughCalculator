@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0150F9AE2F7EFC4D005427FC /* ColorThemePreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0150F9AD2F7EFC4D005427FC /* ColorThemePreview.swift */; };
 		0170B3712F674891004D506E /* DoughCalculatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3702F674891004D506E /* DoughCalculatorApp.swift */; };
 		0170B3732F674891004D506E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3722F674891004D506E /* ContentView.swift */; };
 		0170B3752F674893004D506E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0170B3742F674893004D506E /* Assets.xcassets */; };
@@ -43,7 +42,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0150F9AD2F7EFC4D005427FC /* ColorThemePreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorThemePreview.swift; sourceTree = "<group>"; };
 		0170B36D2F674891004D506E /* DoughCalculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoughCalculator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0170B3702F674891004D506E /* DoughCalculatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoughCalculatorApp.swift; sourceTree = "<group>"; };
 		0170B3722F674891004D506E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -95,7 +93,6 @@
 		0170B3642F674891004D506E = {
 			isa = PBXGroup;
 			children = (
-				0150F9AD2F7EFC4D005427FC /* ColorThemePreview.swift */,
 				0170B36F2F674891004D506E /* DoughCalculator */,
 				0170B3872F674893004D506E /* DoughCalculatorTests */,
 				0170B3912F674893004D506E /* DoughCalculatorUITests */,
@@ -291,7 +288,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0150F9AE2F7EFC4D005427FC /* ColorThemePreview.swift in Sources */,
 				0170B37A2F674893004D506E /* Persistence.swift in Sources */,
 				0170B37D2F674893004D506E /* DoughCalculator.xcdatamodeld in Sources */,
 				0170B3732F674891004D506E /* ContentView.swift in Sources */,
