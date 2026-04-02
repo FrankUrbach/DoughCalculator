@@ -184,7 +184,8 @@ struct CalculatorView: View {
             }
 
             if showHydration {
-                pctStepper("Hydration", value: $recipe.hydration, in: 40...100)
+                pctStepper("Dough Loss", value: $recipe.doughLossPercentage, in: 0...10, step: 0.5)
+                pctStepper("Hydration",  value: $recipe.hydration,            in: 40...100)
             }
         }
     }
@@ -315,6 +316,7 @@ struct CalculatorView: View {
             }
             Section {
                 totalRow
+                lossRow
                 fermentationRow
             }
         } else {
@@ -330,8 +332,24 @@ struct CalculatorView: View {
                 if recipe.sugarPercentage > 0 { resultRow("Sugar",     calc.sugarWeight) }
                 if recipe.fatPercentage   > 0 { resultRow("Fat / Oil", calc.fatWeight) }
                 totalRow
+                lossRow
                 fermentationRow
             }
+        }
+    }
+
+    @ViewBuilder private var lossRow: some View {
+        if recipe.doughLossPercentage > 0 {
+            HStack {
+                Label("Dough Loss", systemImage: "info.circle")
+                Text(formatPct(recipe.doughLossPercentage))
+                    .foregroundStyle(.tertiary)
+                Spacer()
+                Text("+ \(UnitFormatter.formatWeight(calc.lossWeight, system: unitSystem))")
+                    .monospacedDigit()
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
     }
 

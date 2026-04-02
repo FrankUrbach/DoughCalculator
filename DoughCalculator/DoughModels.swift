@@ -164,6 +164,7 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
     var yeastPercentage: Double = 2
     var sugarPercentage: Double = 0
     var fatPercentage: Double = 0
+    var doughLossPercentage: Double = 2.0
     var fermentationTemperature: Double = 20
 
     // Kühlschrankgare
@@ -204,7 +205,7 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id, name, doughType, usePortions, portionCount, portionWeight
         case doughWeight, hydration, saltPercentage, yeastType, yeastPercentage
-        case sugarPercentage, fatPercentage, fermentationTemperature
+        case sugarPercentage, fatPercentage, doughLossPercentage, fermentationTemperature
         case useColdFermentation, coldFermentationHours, warmPhaseHours
         case usePreferment, prefermentType, prefermentFlourPercentage
         case prefermentHydration, prefermentYeastPercentage
@@ -226,8 +227,9 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
         saltPercentage  = (try? c.decodeIfPresent(Double.self, forKey: .saltPercentage))  ?? 2
         yeastType       = (try? c.decodeIfPresent(YeastType.self, forKey: .yeastType))    ?? .fresh
         yeastPercentage = (try? c.decodeIfPresent(Double.self, forKey: .yeastPercentage)) ?? 2
-        sugarPercentage = (try? c.decodeIfPresent(Double.self, forKey: .sugarPercentage)) ?? 0
-        fatPercentage   = (try? c.decodeIfPresent(Double.self, forKey: .fatPercentage))   ?? 0
+        sugarPercentage     = (try? c.decodeIfPresent(Double.self, forKey: .sugarPercentage))     ?? 0
+        fatPercentage       = (try? c.decodeIfPresent(Double.self, forKey: .fatPercentage))       ?? 0
+        doughLossPercentage = (try? c.decodeIfPresent(Double.self, forKey: .doughLossPercentage)) ?? 2.0
         fermentationTemperature = (try? c.decodeIfPresent(Double.self, forKey: .fermentationTemperature)) ?? 20
         useColdFermentation   = (try? c.decodeIfPresent(Bool.self,   forKey: .useColdFermentation))   ?? false
         coldFermentationHours = (try? c.decodeIfPresent(Double.self, forKey: .coldFermentationHours)) ?? 24
@@ -256,7 +258,11 @@ struct DoughCalculation {
         + recipe.fatPercentage / 100
     }
 
-    var flourWeight: Double { recipe.effectiveDoughWeight / max(totalFactor, 0.01) }
+    var productionWeight: Double {
+        recipe.effectiveDoughWeight * (1 + recipe.doughLossPercentage / 100)
+    }
+    var lossWeight: Double { productionWeight - recipe.effectiveDoughWeight }
+    var flourWeight: Double { productionWeight / max(totalFactor, 0.01) }
     var waterWeight: Double { flourWeight * recipe.hydration / 100 }
     var saltWeight:  Double { flourWeight * recipe.saltPercentage / 100 }
     var yeastWeight: Double { flourWeight * recipe.yeastPercentage / 100 }
