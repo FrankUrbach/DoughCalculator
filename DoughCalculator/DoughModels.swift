@@ -1,4 +1,5 @@
 import Foundation
+import SwiftData
 
 // MARK: - Enums
 
@@ -144,19 +145,61 @@ enum DoughType: String, Codable, CaseIterable, Identifiable {
 
 // MARK: - Recipe Model
 
-struct DoughRecipe: Codable, Identifiable, Equatable {
-    var id = UUID()
-    var name = String(localized: "New Recipe")
+@Model
+final class DoughRecipe {
+    var id: UUID                          = UUID()
+    var name: String                      = "New Recipe"
+    var doughType: DoughType              = DoughType.custom
+    var usePortions: Bool                 = false
+    var portionCount: Int                 = 4
+    var portionWeight: Double             = 250.0
+    var doughWeight: Double               = 600.0
+    var hydration: Double                 = 65.0
+    var saltPercentage: Double            = 2.0
+    var yeastType: YeastType              = YeastType.fresh
+    var yeastPercentage: Double           = 2.0
+    var sugarPercentage: Double           = 0.0
+    var fatPercentage: Double             = 0.0
+    var doughLossPercentage: Double       = 2.0
+    var fermentationTemperature: Double   = 20.0
+    var useColdFermentation: Bool         = false
+    var coldFermentationHours: Double     = 24.0
+    var warmPhaseHours: Double            = 1.0
+    var usePreferment: Bool               = false
+    var prefermentType: PrefermentType    = PrefermentType.poolish
+    var prefermentFlourPercentage: Double = 30.0
+    var prefermentHydration: Double       = 100.0
+    var prefermentYeastPercentage: Double = 0.1
+    var notes: String                     = ""
+    var savedDate: Date                   = Date()
 
-    // Teigart
+    init() {}
+
+    var effectiveDoughWeight: Double {
+        usePortions ? Double(portionCount) * portionWeight : doughWeight
+    }
+
+    func apply(_ preset: DoughPreset) {
+        hydration               = preset.hydration
+        saltPercentage          = preset.saltPercentage
+        yeastPercentage         = preset.yeastPercentage
+        yeastType               = preset.yeastType
+        sugarPercentage         = preset.sugarPercentage
+        fatPercentage           = preset.fatPercentage
+        fermentationTemperature = preset.fermentationTemperature
+        if usePortions { portionWeight = preset.defaultPortionWeight }
+    }
+}
+
+// MARK: - Migration Helper (UserDefaults → SwiftData, einmalig)
+
+struct LegacyRecipe: Decodable {
+    var id: UUID = UUID()
+    var name: String = "New Recipe"
     var doughType: DoughType = .custom
-
-    // Portionsrechner
     var usePortions: Bool = false
     var portionCount: Int = 4
     var portionWeight: Double = 250
-
-    // Teig
     var doughWeight: Double = 600
     var hydration: Double = 65
     var saltPercentage: Double = 2
@@ -166,41 +209,16 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
     var fatPercentage: Double = 0
     var doughLossPercentage: Double = 2.0
     var fermentationTemperature: Double = 20
-
-    // Kühlschrankgare
-    var useColdFermentation: Bool   = false
-    var coldFermentationHours: Double = 24    // Stunden im Kühlschrank (≈ 4 °C)
-    var warmPhaseHours: Double        = 1     // Akklimatisierung bei Raumtemperatur
-
-    // Vorteig
-    var usePreferment = false
+    var useColdFermentation: Bool = false
+    var coldFermentationHours: Double = 24
+    var warmPhaseHours: Double = 1
+    var usePreferment: Bool = false
     var prefermentType: PrefermentType = .poolish
     var prefermentFlourPercentage: Double = 30
     var prefermentHydration: Double = 100
     var prefermentYeastPercentage: Double = 0.1
-
-    var notes = ""
-    var savedDate = Date()
-
-    // Effektives Teiggewicht: entweder direkt oder aus Portionen berechnet
-    var effectiveDoughWeight: Double {
-        usePortions ? Double(portionCount) * portionWeight : doughWeight
-    }
-
-    // Preset auf das aktuelle Rezept anwenden
-    mutating func apply(_ preset: DoughPreset) {
-        hydration               = preset.hydration
-        saltPercentage          = preset.saltPercentage
-        yeastPercentage         = preset.yeastPercentage
-        yeastType               = preset.yeastType
-        sugarPercentage         = preset.sugarPercentage
-        fatPercentage           = preset.fatPercentage
-        fermentationTemperature = preset.fermentationTemperature
-        // Im Portionsmodus Stückgewicht auf Vorgabe setzen
-        if usePortions { portionWeight = preset.defaultPortionWeight }
-    }
-
-    // MARK: Custom Decoder (Rückwärtskompatibilität)
+    var notes: String = ""
+    var savedDate: Date = Date()
 
     enum CodingKeys: String, CodingKey {
         case id, name, doughType, usePortions, portionCount, portionWeight
@@ -212,12 +230,10 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
         case notes, savedDate
     }
 
-    init() {}
-
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id          = (try? c.decodeIfPresent(UUID.self,   forKey: .id))   ?? UUID()
-        name        = (try? c.decodeIfPresent(String.self, forKey: .name)) ?? String(localized: "New Recipe")
+        name        = (try? c.decodeIfPresent(String.self, forKey: .name)) ?? "New Recipe"
         doughType   = (try? c.decodeIfPresent(DoughType.self, forKey: .doughType)) ?? .custom
         usePortions = (try? c.decodeIfPresent(Bool.self,   forKey: .usePortions))  ?? false
         portionCount  = (try? c.decodeIfPresent(Int.self,    forKey: .portionCount))  ?? 4
@@ -234,8 +250,8 @@ struct DoughRecipe: Codable, Identifiable, Equatable {
         useColdFermentation   = (try? c.decodeIfPresent(Bool.self,   forKey: .useColdFermentation))   ?? false
         coldFermentationHours = (try? c.decodeIfPresent(Double.self, forKey: .coldFermentationHours)) ?? 24
         warmPhaseHours        = (try? c.decodeIfPresent(Double.self, forKey: .warmPhaseHours))        ?? 1
-        usePreferment            = (try? c.decodeIfPresent(Bool.self,           forKey: .usePreferment))            ?? false
-        prefermentType           = (try? c.decodeIfPresent(PrefermentType.self, forKey: .prefermentType))           ?? .poolish
+        usePreferment             = (try? c.decodeIfPresent(Bool.self,           forKey: .usePreferment))             ?? false
+        prefermentType            = (try? c.decodeIfPresent(PrefermentType.self, forKey: .prefermentType))            ?? .poolish
         prefermentFlourPercentage = (try? c.decodeIfPresent(Double.self, forKey: .prefermentFlourPercentage)) ?? 30
         prefermentHydration       = (try? c.decodeIfPresent(Double.self, forKey: .prefermentHydration))       ?? 100
         prefermentYeastPercentage = (try? c.decodeIfPresent(Double.self, forKey: .prefermentYeastPercentage)) ?? 0.1
@@ -334,41 +350,3 @@ struct DoughCalculation {
     var mainDoughYeastInstant: Double { mainDoughYeastFresh / 3.333 }
 }
 
-// MARK: - Persistence
-
-class RecipeStore: ObservableObject {
-    @Published var recipes: [DoughRecipe] = []
-    private let key = "dough_recipes_v1"
-
-    init() { load() }
-
-    func save(_ recipe: DoughRecipe) {
-        var r = recipe
-        r.savedDate = Date()
-        if let i = recipes.firstIndex(where: { $0.id == recipe.id }) {
-            recipes[i] = r
-        } else {
-            recipes.insert(r, at: 0)
-        }
-        persist()
-    }
-
-    func delete(at offsets: IndexSet) {
-        recipes.remove(atOffsets: offsets)
-        persist()
-    }
-
-    private func persist() {
-        if let data = try? JSONEncoder().encode(recipes) {
-            UserDefaults.standard.set(data, forKey: key)
-        }
-    }
-
-    private func load() {
-        guard
-            let data    = UserDefaults.standard.data(forKey: key),
-            let decoded = try? JSONDecoder().decode([DoughRecipe].self, from: data)
-        else { return }
-        recipes = decoded
-    }
-}
