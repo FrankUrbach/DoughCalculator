@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 // MARK: - Sub-Tab (nicht private – wird auch von ContentView/RecipesView genutzt)
 
@@ -9,7 +10,7 @@ enum CalcTab {
 struct CalculatorView: View {
     @Binding var recipe:    DoughRecipe
     @Binding var activeTab: CalcTab
-    @EnvironmentObject var store: RecipeStore
+    @Environment(\.modelContext) private var modelContext
 
     @AppStorage("unitSystem") private var unitSystem: UnitSystem = .metric
 
@@ -20,7 +21,7 @@ struct CalculatorView: View {
     private var calc: DoughCalculation { DoughCalculation(recipe: recipe) }
 
     private var isExistingRecipe: Bool {
-        store.recipes.contains { $0.id == recipe.id }
+        recipe.modelContext != nil
     }
 
     // MARK: - Weight input bindings (display ↔ internal grams)
@@ -100,14 +101,20 @@ struct CalculatorView: View {
                 }
             }
             .confirmationDialog("Save Recipe", isPresented: $showSaveOptions, titleVisibility: .visible) {
-                Button("save.overwrite") { store.save(recipe) }
-                Button("save.asNew")    { showSaveSheet = true }
+                Button("save.overwrite") {
+                    recipe.savedDate = Date()
+                    try? modelContext.save()
+                }
+                Button("save.asNew") {
+                    recipe = makeCopy(of: recipe)
+                    showSaveSheet = true
+                }
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("save.overwriteOrNew")
             }
             .sheet(isPresented: $showSaveSheet) {
-                SaveRecipeSheet(recipe: $recipe).environmentObject(store)
+                SaveRecipeSheet(recipe: recipe)
             }
             .onChange(of: recipe.id) { _, _ in
                 showOptional = recipe.sugarPercentage > 0 || recipe.fatPercentage > 0
@@ -424,6 +431,36 @@ struct CalculatorView: View {
         }
     }
 
+    // MARK: - Save as new (copy all fields into a detached instance)
+
+    private func makeCopy(of source: DoughRecipe) -> DoughRecipe {
+        let copy = DoughRecipe()
+        copy.name                       = source.name
+        copy.doughType                  = source.doughType
+        copy.usePortions                = source.usePortions
+        copy.portionCount               = source.portionCount
+        copy.portionWeight              = source.portionWeight
+        copy.doughWeight                = source.doughWeight
+        copy.hydration                  = source.hydration
+        copy.saltPercentage             = source.saltPercentage
+        copy.yeastType                  = source.yeastType
+        copy.yeastPercentage            = source.yeastPercentage
+        copy.sugarPercentage            = source.sugarPercentage
+        copy.fatPercentage              = source.fatPercentage
+        copy.doughLossPercentage        = source.doughLossPercentage
+        copy.fermentationTemperature    = source.fermentationTemperature
+        copy.useColdFermentation        = source.useColdFermentation
+        copy.coldFermentationHours      = source.coldFermentationHours
+        copy.warmPhaseHours             = source.warmPhaseHours
+        copy.usePreferment              = source.usePreferment
+        copy.prefermentType             = source.prefermentType
+        copy.prefermentFlourPercentage  = source.prefermentFlourPercentage
+        copy.prefermentHydration        = source.prefermentHydration
+        copy.prefermentYeastPercentage  = source.prefermentYeastPercentage
+        copy.notes                      = source.notes
+        return copy
+    }
+
     // MARK: - Cold fermentation
 
     private func updateYeastForCold() {
@@ -457,19 +494,20 @@ struct CalculatorView: View {
 // MARK: - Save / rename sheet
 
 struct SaveRecipeSheet: View {
-    @Binding var recipe: DoughRecipe
-    @EnvironmentObject var store: RecipeStore
+    var recipe: DoughRecipe
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
 
     var body: some View {
+        @Bindable var r = recipe
         NavigationStack {
             Form {
                 Section("Name") {
                     TextField("e.g. Pizza Dough", text: $name)
                 }
                 Section("Notes") {
-                    TextField("Optional", text: $recipe.notes, axis: .vertical)
+                    TextField("Optional", text: $r.notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
             }
@@ -482,7 +520,9 @@ struct SaveRecipeSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         recipe.name = name.isEmpty ? String(localized: "New Recipe") : name
-                        store.save(recipe)
+                        recipe.savedDate = Date()
+                        modelContext.insert(recipe)
+                        try? modelContext.save()
                         dismiss()
                     }
                     .fontWeight(.semibold)
@@ -495,5 +535,5 @@ struct SaveRecipeSheet: View {
 
 #Preview {
     CalculatorView(recipe: .constant(DoughRecipe()), activeTab: .constant(.einstellungen))
-        .environmentObject(RecipeStore())
+        .modelContainer(for: DoughRecipe.self, inMemory: true)
 }

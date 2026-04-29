@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct DoughCalculatorApp: App {
@@ -6,5 +7,9 @@ struct DoughCalculatorApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(
+            for: DoughRecipe.self,
+            configurations: ModelConfiguration(cloudKitDatabase: .automatic)
+        )
     }
 }

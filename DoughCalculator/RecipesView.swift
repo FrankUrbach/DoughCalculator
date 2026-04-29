@@ -1,10 +1,12 @@
 import SwiftUI
+import SwiftData
 
 struct RecipesView: View {
     @Binding var recipe:  DoughRecipe
     @Binding var mainTab: Int
     @Binding var calcTab: CalcTab
-    @EnvironmentObject var store: RecipeStore
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \DoughRecipe.savedDate, order: .reverse) private var recipes: [DoughRecipe]
 
     @AppStorage("unitSystem") private var unitSystem: UnitSystem = .metric
     @State private var searchText = ""
@@ -16,11 +18,10 @@ struct RecipesView: View {
         return f
     }()
 
-    // Gefilterte Rezepte: Suche über Name, Teigart (lokalisiert) und Notizen
     private var filteredRecipes: [DoughRecipe] {
-        guard !searchText.isEmpty else { return store.recipes }
+        guard !searchText.isEmpty else { return recipes }
         let q = searchText.lowercased()
-        return store.recipes.filter {
+        return recipes.filter {
             $0.name.lowercased().contains(q)
             || $0.doughType.localizedName.lowercased().contains(q)
             || $0.notes.lowercased().contains(q)
@@ -30,7 +31,7 @@ struct RecipesView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if store.recipes.isEmpty {
+                if recipes.isEmpty {
                     ContentUnavailableView(
                         "No Recipes",
                         systemImage: "list.clipboard",
@@ -42,14 +43,12 @@ struct RecipesView: View {
                     List {
                         ForEach(filteredRecipes) { saved in
                             Button {
-                                // Ansehen → Ergebnis-Tab
                                 recipe  = saved
                                 calcTab = .ergebnis
                                 mainTab = 0
                             } label: {
                                 recipeRow(saved)
                             }
-                            // Bearbeiten (links) / Löschen (rechts)
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 Button {
                                     recipe  = saved
@@ -79,9 +78,8 @@ struct RecipesView: View {
     // MARK: - Aktionen
 
     private func delete(_ saved: DoughRecipe) {
-        if let idx = store.recipes.firstIndex(where: { $0.id == saved.id }) {
-            store.delete(at: IndexSet(integer: idx))
-        }
+        modelContext.delete(saved)
+        try? modelContext.save()
     }
 
     // MARK: - Listenzeile
@@ -145,5 +143,5 @@ struct RecipesView: View {
         mainTab: .constant(1),
         calcTab: .constant(.ergebnis)
     )
-    .environmentObject(RecipeStore())
+    .modelContainer(for: DoughRecipe.self, inMemory: true)
 }
