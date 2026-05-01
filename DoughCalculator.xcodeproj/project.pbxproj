@@ -50,7 +50,6 @@
 		0170B3792F674893004D506E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		0170B37C2F674893004D506E /* DoughCalculator.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DoughCalculator.xcdatamodel; sourceTree = "<group>"; };
 		0170B37E2F674893004D506E /* DoughCalculator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DoughCalculator.entitlements; sourceTree = "<group>"; };
-		0170B37F2F674893004D506E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0170B3842F674893004D506E /* DoughCalculatorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DoughCalculatorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0170B3882F674893004D506E /* DoughCalculatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoughCalculatorTests.swift; sourceTree = "<group>"; };
 		0170B38E2F674893004D506E /* DoughCalculatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DoughCalculatorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -124,7 +123,6 @@
 				0170B3742F674893004D506E /* Assets.xcassets */,
 				0170B3792F674893004D506E /* Persistence.swift */,
 				0170B37E2F674893004D506E /* DoughCalculator.entitlements */,
-				0170B37F2F674893004D506E /* Info.plist */,
 				0170B37B2F674893004D506E /* DoughCalculator.xcdatamodeld */,
 				0170B3762F674893004D506E /* Preview Content */,
 			);
@@ -483,6 +481,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DoughCalculator/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DoughCalculator;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -515,6 +514,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DoughCalculator/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DoughCalculator;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
