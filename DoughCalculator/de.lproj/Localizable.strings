@@ -24,6 +24,14 @@
 "Dough" = "Teig";
 "Ingredients" = "Zutaten";
 "Optional Ingredients" = "Optionale Zutaten";
+"Additional Ingredients" = "Weitere Zutaten";
+"No Additional Ingredients" = "Keine weiteren Zutaten";
+"Manage Ingredients" = "Zutaten verwalten";
+"Add Ingredient" = "Zutat hinzufügen";
+"Ingredient Name" = "Zutatname";
+"Percentage" = "Prozent";
+"Done" = "Fertig";
+"Add ingredients like malt, seeds, honey or spices." = "Füge Zutaten wie Malz, Saaten, Honig oder Gewürze hinzu.";
 "Fermentation" = "Gärung";
 "Pre-ferment" = "Vorteig";
 "Notes" = "Notizen";

@@ -118,7 +118,10 @@ struct RecipesView: View {
                     Label(UnitFormatter.formatWeightCompact(saved.effectiveDoughWeight, system: unitSystem), systemImage: "scalemass")
                 }
                 Label("\(Int(saved.hydration)) %", systemImage: "drop")
-                Label(saved.yeastType.localizedName,    systemImage: "leaf")
+                Label(saved.yeastType.localizedName, systemImage: "leaf")
+                if saved.additionalIngredientsPercentage > 0 {
+                    Label("\(saved.allAdditionalIngredients.count)", systemImage: "carrot")
+                }
                 if saved.usePreferment {
                     Label(saved.prefermentType.localizedName, systemImage: "clock.badge.checkmark")
                 }

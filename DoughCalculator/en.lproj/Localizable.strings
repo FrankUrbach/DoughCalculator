@@ -24,6 +24,14 @@
 "Dough" = "Dough";
 "Ingredients" = "Ingredients";
 "Optional Ingredients" = "Optional Ingredients";
+"Additional Ingredients" = "Additional Ingredients";
+"No Additional Ingredients" = "No Additional Ingredients";
+"Manage Ingredients" = "Manage Ingredients";
+"Add Ingredient" = "Add Ingredient";
+"Ingredient Name" = "Ingredient Name";
+"Percentage" = "Percentage";
+"Done" = "Done";
+"Add ingredients like malt, seeds, honey or spices." = "Add ingredients like malt, seeds, honey or spices.";
 "Fermentation" = "Fermentation";
 "Pre-ferment" = "Pre-ferment";
 "Notes" = "Notes";

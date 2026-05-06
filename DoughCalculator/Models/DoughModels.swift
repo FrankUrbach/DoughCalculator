@@ -143,6 +143,21 @@ enum DoughType: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+// MARK: - Additional Ingredients
+
+struct AdditionalIngredient: Codable, Identifiable, Equatable, Hashable {
+    var id: UUID = UUID()
+    var name: String
+    var percentage: Double
+}
+
+struct IngredientAmount: Identifiable {
+    let id: UUID
+    let name: String
+    let percentage: Double
+    let weight: Double
+}
+
 // MARK: - Recipe Model
 
 @Model
@@ -170,6 +185,7 @@ final class DoughRecipe {
     var prefermentFlourPercentage: Double = 30.0
     var prefermentHydration: Double       = 100.0
     var prefermentYeastPercentage: Double = 0.1
+    var additionalIngredientsData: Data    = Data()
     var notes: String                     = ""
     var savedDate: Date                   = Date()
 
@@ -177,6 +193,35 @@ final class DoughRecipe {
 
     var effectiveDoughWeight: Double {
         usePortions ? Double(portionCount) * portionWeight : doughWeight
+    }
+
+    var additionalIngredients: [AdditionalIngredient] {
+        get {
+            guard !additionalIngredientsData.isEmpty else { return [] }
+            return (try? JSONDecoder().decode([AdditionalIngredient].self, from: additionalIngredientsData)) ?? []
+        }
+        set {
+            additionalIngredientsData = (try? JSONEncoder().encode(newValue)) ?? Data()
+        }
+    }
+
+    var legacyAdditionalIngredients: [AdditionalIngredient] {
+        var ingredients: [AdditionalIngredient] = []
+        if sugarPercentage > 0 {
+            ingredients.append(AdditionalIngredient(id: UUID(uuidString: "00000000-0000-0000-0000-000000000001") ?? UUID(), name: String(localized: "Sugar"), percentage: sugarPercentage))
+        }
+        if fatPercentage > 0 {
+            ingredients.append(AdditionalIngredient(id: UUID(uuidString: "00000000-0000-0000-0000-000000000002") ?? UUID(), name: String(localized: "Fat / Oil"), percentage: fatPercentage))
+        }
+        return ingredients
+    }
+
+    var allAdditionalIngredients: [AdditionalIngredient] {
+        legacyAdditionalIngredients + additionalIngredients
+    }
+
+    var additionalIngredientsPercentage: Double {
+        allAdditionalIngredients.reduce(0) { $0 + max(0, $1.percentage) }
     }
 
     func apply(_ preset: DoughPreset) {
@@ -221,6 +266,7 @@ final class DoughRecipe {
         prefermentFlourPercentage  = source.prefermentFlourPercentage
         prefermentHydration        = source.prefermentHydration
         prefermentYeastPercentage  = source.prefermentYeastPercentage
+        additionalIngredientsData   = source.additionalIngredientsData
         notes                      = source.notes
     }
 }
@@ -304,8 +350,7 @@ struct DoughCalculation {
         + recipe.hydration / 100
         + recipe.saltPercentage / 100
         + recipe.yeastPercentage / 100
-        + recipe.sugarPercentage / 100
-        + recipe.fatPercentage / 100
+        + recipe.additionalIngredientsPercentage / 100
     }
 
     var productionWeight: Double {
@@ -318,6 +363,16 @@ struct DoughCalculation {
     var yeastWeight: Double { flourWeight * recipe.yeastPercentage / 100 }
     var sugarWeight: Double { flourWeight * recipe.sugarPercentage / 100 }
     var fatWeight:   Double { flourWeight * recipe.fatPercentage / 100 }
+    var additionalIngredientAmounts: [IngredientAmount] {
+        recipe.allAdditionalIngredients.map {
+            IngredientAmount(
+                id: $0.id,
+                name: $0.name,
+                percentage: $0.percentage,
+                weight: flourWeight * $0.percentage / 100
+            )
+        }
+    }
 
     // Umrechnung zwischen Hefetypen. Verhältnis Frisch : Trocken : Instant ≈ 3 : 1 : 0.9
     func yeastAmount(as targetType: YeastType) -> Double {

@@ -15,9 +15,10 @@ struct CalculatorView: View {
 
     @AppStorage("unitSystem") private var unitSystem: UnitSystem = .metric
 
-    @State private var showSaveSheet    = false
-    @State private var showSaveOptions  = false
-    @State private var showOptional     = false
+    @State private var showSaveSheet        = false
+    @State private var showSaveOptions      = false
+    @State private var showOptional         = false
+    @State private var showIngredientsSheet = false
 
     private var calc: DoughCalculation { DoughCalculation(recipe: recipe) }
 
@@ -121,8 +122,14 @@ struct CalculatorView: View {
                     editingRecipe = saved
                 }
             }
+            .sheet(isPresented: $showIngredientsSheet) {
+                AdditionalIngredientsSheet(ingredients: recipe.additionalIngredients) { ingredients in
+                    recipe.additionalIngredients = ingredients
+                    showOptional = recipe.additionalIngredientsPercentage > 0
+                }
+            }
             .onChange(of: recipe.id) { _, _ in
-                showOptional = recipe.sugarPercentage > 0 || recipe.fatPercentage > 0
+                showOptional = recipe.additionalIngredientsPercentage > 0
             }
         }
     }
@@ -137,7 +144,7 @@ struct CalculatorView: View {
             .onChange(of: recipe.doughType) { _, newType in
                 if let preset = newType.preset {
                     recipe.apply(preset)
-                    showOptional = preset.sugarPercentage > 0 || preset.fatPercentage > 0
+                    showOptional = recipe.additionalIngredientsPercentage > 0
                 }
             }
             if let tip = recipe.doughType.preset?.tip {
@@ -230,6 +237,26 @@ struct CalculatorView: View {
         Section("Optional Ingredients") {
             pctStepper("Sugar",     value: $recipe.sugarPercentage, in: 0...20)
             pctStepper("Fat / Oil", value: $recipe.fatPercentage,   in: 0...50)
+
+            if recipe.additionalIngredients.isEmpty {
+                Text("No Additional Ingredients")
+                    .foregroundStyle(.secondary)
+            } else {
+                ForEach(recipe.additionalIngredients) { ingredient in
+                    HStack {
+                        Text(ingredient.name)
+                        Spacer()
+                        Text(formatPct(ingredient.percentage))
+                            .foregroundStyle(.secondary).monospacedDigit()
+                    }
+                }
+            }
+
+            Button {
+                showIngredientsSheet = true
+            } label: {
+                Label("Manage Ingredients", systemImage: "slider.horizontal.3")
+            }
         }
     }
 
@@ -323,8 +350,7 @@ struct CalculatorView: View {
                 case .instant: resultRow("Instant Yeast", calc.mainDoughYeastInstant)
                 }
                 resultRow("Salt", calc.saltWeight)
-                if recipe.sugarPercentage > 0 { resultRow("Sugar",     calc.sugarWeight) }
-                if recipe.fatPercentage   > 0 { resultRow("Fat / Oil", calc.fatWeight) }
+                additionalIngredientRows
             }
             Section {
                 totalRow
@@ -341,12 +367,17 @@ struct CalculatorView: View {
                 case .instant: resultRow("Instant Yeast", calc.yeastAmount(as: .instant))
                 }
                 resultRow("Salt", calc.saltWeight)
-                if recipe.sugarPercentage > 0 { resultRow("Sugar",     calc.sugarWeight) }
-                if recipe.fatPercentage   > 0 { resultRow("Fat / Oil", calc.fatWeight) }
+                additionalIngredientRows
                 totalRow
                 lossRow
                 fermentationRow
             }
+        }
+    }
+
+    @ViewBuilder private var additionalIngredientRows: some View {
+        ForEach(calc.additionalIngredientAmounts) { ingredient in
+            resultRowText(ingredient.name, ingredient.weight)
         }
     }
 
@@ -420,6 +451,15 @@ struct CalculatorView: View {
         }
     }
 
+    private func resultRowText(_ label: String, _ value: Double) -> some View {
+        HStack {
+            Text(label)
+            Spacer()
+            Text(UnitFormatter.formatWeight(value, system: unitSystem))
+                .foregroundStyle(.secondary).monospacedDigit()
+        }
+    }
+
     private func pctStepper(
         _ label: LocalizedStringKey,
         value: Binding<Double>,
@@ -468,6 +508,85 @@ struct CalculatorView: View {
         return days == floor(days)
             ? "\(Int(days)) \(String(localized: "days"))"
             : String(format: "%.1f \(String(localized: "days"))", days)
+    }
+
+    private func formatPct(_ v: Double) -> String {
+        v < 1 ? String(format: "%.2f %%", v) : String(format: "%.1f %%", v)
+    }
+}
+
+// MARK: - Additional Ingredients Sheet
+
+struct AdditionalIngredientsSheet: View {
+    let onDone: ([AdditionalIngredient]) -> Void
+    @Environment(\.dismiss) private var dismiss
+    @State private var ingredients: [AdditionalIngredient]
+
+    init(ingredients: [AdditionalIngredient], onDone: @escaping ([AdditionalIngredient]) -> Void) {
+        _ingredients = State(initialValue: ingredients)
+        self.onDone = onDone
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                if ingredients.isEmpty {
+                    ContentUnavailableView(
+                        "No Additional Ingredients",
+                        systemImage: "carrot",
+                        description: Text("Add ingredients like malt, seeds, honey or spices.")
+                    )
+                }
+
+                ForEach($ingredients) { $ingredient in
+                    Section {
+                        TextField("Ingredient Name", text: $ingredient.name)
+                        Stepper(value: $ingredient.percentage, in: 0...100, step: 0.5) {
+                            HStack {
+                                Text("Percentage")
+                                Spacer()
+                                Text(formatPct(ingredient.percentage))
+                                    .foregroundStyle(.secondary).monospacedDigit()
+                            }
+                        }
+                    }
+                }
+                .onDelete { offsets in
+                    ingredients.remove(atOffsets: offsets)
+                }
+                .onMove { source, destination in
+                    ingredients.move(fromOffsets: source, toOffset: destination)
+                }
+            }
+            .navigationTitle("Additional Ingredients")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                }
+                ToolbarItem(placement: .bottomBar) {
+                    Button {
+                        ingredients.append(AdditionalIngredient(name: "", percentage: 1))
+                    } label: {
+                        Label("Add Ingredient", systemImage: "plus")
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        onDone(
+                            ingredients
+                                .map { AdditionalIngredient(id: $0.id, name: $0.name.trimmingCharacters(in: .whitespacesAndNewlines), percentage: $0.percentage) }
+                                .filter { !$0.name.isEmpty && $0.percentage > 0 }
+                        )
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
     }
 
     private func formatPct(_ v: Double) -> String {
