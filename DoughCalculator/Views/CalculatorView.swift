@@ -8,7 +8,8 @@ enum CalcTab {
 }
 
 struct CalculatorView: View {
-    @Binding var recipe:    DoughRecipe
+    @Binding var recipe: DoughRecipe
+    @Binding var editingRecipe: DoughRecipe?
     @Binding var activeTab: CalcTab
     @Environment(\.modelContext) private var modelContext
 
@@ -21,7 +22,7 @@ struct CalculatorView: View {
     private var calc: DoughCalculation { DoughCalculation(recipe: recipe) }
 
     private var isExistingRecipe: Bool {
-        recipe.modelContext != nil
+        editingRecipe != nil
     }
 
     // MARK: - Weight input bindings (display ↔ internal grams)
@@ -47,8 +48,9 @@ struct CalculatorView: View {
             VStack(spacing: 0) {
                 HStack {
                     Button("New") {
-                        recipe       = DoughRecipe()
-                        showOptional = false
+                        recipe        = DoughRecipe()
+                        editingRecipe = nil
+                        showOptional  = false
                     }
                     .buttonStyle(.bordered)
                     Spacer()
@@ -102,11 +104,11 @@ struct CalculatorView: View {
             }
             .confirmationDialog("Save Recipe", isPresented: $showSaveOptions, titleVisibility: .visible) {
                 Button("save.overwrite") {
-                    recipe.savedDate = Date()
-                    try? modelContext.save()
+                    overwriteEditingRecipe()
                 }
                 Button("save.asNew") {
-                    recipe = makeCopy(of: recipe)
+                    recipe = recipe.detachedCopy()
+                    editingRecipe = nil
                     showSaveSheet = true
                 }
                 Button("Cancel", role: .cancel) { }
@@ -114,7 +116,10 @@ struct CalculatorView: View {
                 Text("save.overwriteOrNew")
             }
             .sheet(isPresented: $showSaveSheet) {
-                SaveRecipeSheet(recipe: recipe)
+                SaveRecipeSheet(recipe: recipe) { saved in
+                    recipe = saved.detachedCopy()
+                    editingRecipe = saved
+                }
             }
             .onChange(of: recipe.id) { _, _ in
                 showOptional = recipe.sugarPercentage > 0 || recipe.fatPercentage > 0
@@ -431,34 +436,13 @@ struct CalculatorView: View {
         }
     }
 
-    // MARK: - Save as new (copy all fields into a detached instance)
+    // MARK: - Saving
 
-    private func makeCopy(of source: DoughRecipe) -> DoughRecipe {
-        let copy = DoughRecipe()
-        copy.name                       = source.name
-        copy.doughType                  = source.doughType
-        copy.usePortions                = source.usePortions
-        copy.portionCount               = source.portionCount
-        copy.portionWeight              = source.portionWeight
-        copy.doughWeight                = source.doughWeight
-        copy.hydration                  = source.hydration
-        copy.saltPercentage             = source.saltPercentage
-        copy.yeastType                  = source.yeastType
-        copy.yeastPercentage            = source.yeastPercentage
-        copy.sugarPercentage            = source.sugarPercentage
-        copy.fatPercentage              = source.fatPercentage
-        copy.doughLossPercentage        = source.doughLossPercentage
-        copy.fermentationTemperature    = source.fermentationTemperature
-        copy.useColdFermentation        = source.useColdFermentation
-        copy.coldFermentationHours      = source.coldFermentationHours
-        copy.warmPhaseHours             = source.warmPhaseHours
-        copy.usePreferment              = source.usePreferment
-        copy.prefermentType             = source.prefermentType
-        copy.prefermentFlourPercentage  = source.prefermentFlourPercentage
-        copy.prefermentHydration        = source.prefermentHydration
-        copy.prefermentYeastPercentage  = source.prefermentYeastPercentage
-        copy.notes                      = source.notes
-        return copy
+    private func overwriteEditingRecipe() {
+        guard let editingRecipe else { return }
+        editingRecipe.applyValues(from: recipe)
+        editingRecipe.savedDate = Date()
+        try? modelContext.save()
     }
 
     // MARK: - Cold fermentation
@@ -495,19 +479,20 @@ struct CalculatorView: View {
 
 struct SaveRecipeSheet: View {
     var recipe: DoughRecipe
+    var onSaved: (DoughRecipe) -> Void = { _ in }
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
+    @State private var notes = ""
 
     var body: some View {
-        @Bindable var r = recipe
         NavigationStack {
             Form {
                 Section("Name") {
                     TextField("e.g. Pizza Dough", text: $name)
                 }
                 Section("Notes") {
-                    TextField("Optional", text: $r.notes, axis: .vertical)
+                    TextField("Optional", text: $notes, axis: .vertical)
                         .lineLimit(3...6)
                 }
             }
@@ -520,20 +505,29 @@ struct SaveRecipeSheet: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         recipe.name = name.isEmpty ? String(localized: "New Recipe") : name
+                        recipe.notes = notes
                         recipe.savedDate = Date()
                         modelContext.insert(recipe)
                         try? modelContext.save()
+                        onSaved(recipe)
                         dismiss()
                     }
                     .fontWeight(.semibold)
                 }
             }
-            .onAppear { name = recipe.name }
+            .onAppear {
+                name = recipe.name
+                notes = recipe.notes
+            }
         }
     }
 }
 
 #Preview {
-    CalculatorView(recipe: .constant(DoughRecipe()), activeTab: .constant(.einstellungen))
-        .modelContainer(for: DoughRecipe.self, inMemory: true)
+    CalculatorView(
+        recipe: .constant(DoughRecipe()),
+        editingRecipe: .constant(nil),
+        activeTab: .constant(.einstellungen)
+    )
+    .modelContainer(for: DoughRecipe.self, inMemory: true)
 }

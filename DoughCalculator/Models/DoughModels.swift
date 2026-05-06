@@ -189,6 +189,40 @@ final class DoughRecipe {
         fermentationTemperature = preset.fermentationTemperature
         if usePortions { portionWeight = preset.defaultPortionWeight }
     }
+
+    /// Creates a detached draft copy. The copy has a new id and is not inserted into SwiftData.
+    func detachedCopy() -> DoughRecipe {
+        let copy = DoughRecipe()
+        copy.applyValues(from: self)
+        return copy
+    }
+
+    /// Copies editable recipe fields, intentionally preserving the receiver's identity/context.
+    func applyValues(from source: DoughRecipe) {
+        name                       = source.name
+        doughType                  = source.doughType
+        usePortions                = source.usePortions
+        portionCount               = source.portionCount
+        portionWeight              = source.portionWeight
+        doughWeight                = source.doughWeight
+        hydration                  = source.hydration
+        saltPercentage             = source.saltPercentage
+        yeastType                  = source.yeastType
+        yeastPercentage            = source.yeastPercentage
+        sugarPercentage            = source.sugarPercentage
+        fatPercentage              = source.fatPercentage
+        doughLossPercentage        = source.doughLossPercentage
+        fermentationTemperature    = source.fermentationTemperature
+        useColdFermentation        = source.useColdFermentation
+        coldFermentationHours      = source.coldFermentationHours
+        warmPhaseHours             = source.warmPhaseHours
+        usePreferment              = source.usePreferment
+        prefermentType             = source.prefermentType
+        prefermentFlourPercentage  = source.prefermentFlourPercentage
+        prefermentHydration        = source.prefermentHydration
+        prefermentYeastPercentage  = source.prefermentYeastPercentage
+        notes                      = source.notes
+    }
 }
 
 // MARK: - Migration Helper (UserDefaults → SwiftData, einmalig)

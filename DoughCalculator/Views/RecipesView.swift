@@ -2,7 +2,8 @@ import SwiftUI
 import SwiftData
 
 struct RecipesView: View {
-    @Binding var recipe:  DoughRecipe
+    @Binding var recipe: DoughRecipe
+    @Binding var editingRecipe: DoughRecipe?
     @Binding var mainTab: Int
     @Binding var calcTab: CalcTab
     @Environment(\.modelContext) private var modelContext
@@ -43,7 +44,8 @@ struct RecipesView: View {
                     List {
                         ForEach(filteredRecipes) { saved in
                             Button {
-                                recipe  = saved
+                                recipe = saved.detachedCopy()
+                                editingRecipe = saved
                                 calcTab = .ergebnis
                                 mainTab = 0
                             } label: {
@@ -51,7 +53,8 @@ struct RecipesView: View {
                             }
                             .swipeActions(edge: .leading, allowsFullSwipe: false) {
                                 Button {
-                                    recipe  = saved
+                                    recipe = saved.detachedCopy()
+                                    editingRecipe = saved
                                     calcTab = .einstellungen
                                     mainTab = 0
                                 } label: {
@@ -78,6 +81,11 @@ struct RecipesView: View {
     // MARK: - Aktionen
 
     private func delete(_ saved: DoughRecipe) {
+        if editingRecipe?.id == saved.id {
+            recipe = DoughRecipe()
+            editingRecipe = nil
+            calcTab = .einstellungen
+        }
         modelContext.delete(saved)
         try? modelContext.save()
     }
@@ -139,7 +147,8 @@ struct RecipesView: View {
 
 #Preview {
     RecipesView(
-        recipe:  .constant(DoughRecipe()),
+        recipe: .constant(DoughRecipe()),
+        editingRecipe: .constant(nil),
         mainTab: .constant(1),
         calcTab: .constant(.ergebnis)
     )

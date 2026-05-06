@@ -3,17 +3,18 @@ import SwiftData
 
 struct ContentView: View {
     @State private var recipe  = DoughRecipe()
+    @State private var editingRecipe: DoughRecipe? = nil
     @State private var mainTab = 0
     @State private var calcTab = CalcTab.einstellungen
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
         TabView(selection: $mainTab) {
-            CalculatorView(recipe: $recipe, activeTab: $calcTab)
+            CalculatorView(recipe: $recipe, editingRecipe: $editingRecipe, activeTab: $calcTab)
                 .tabItem { Label("Calculator", systemImage: "scalemass.fill") }
                 .tag(0)
 
-            RecipesView(recipe: $recipe, mainTab: $mainTab, calcTab: $calcTab)
+            RecipesView(recipe: $recipe, editingRecipe: $editingRecipe, mainTab: $mainTab, calcTab: $calcTab)
                 .tabItem { Label("Recipes", systemImage: "list.clipboard.fill") }
                 .tag(1)
 

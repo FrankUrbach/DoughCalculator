@@ -3,25 +3,19 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0170B3712F674891004D506E /* DoughCalculatorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3702F674891004D506E /* DoughCalculatorApp.swift */; };
-		0170B3732F674891004D506E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3722F674891004D506E /* ContentView.swift */; };
 		0170B3752F674893004D506E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0170B3742F674893004D506E /* Assets.xcassets */; };
 		0170B3782F674893004D506E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0170B3772F674893004D506E /* Preview Assets.xcassets */; };
-		0170B37A2F674893004D506E /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3792F674893004D506E /* Persistence.swift */; };
 		0170B37D2F674893004D506E /* DoughCalculator.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 0170B37B2F674893004D506E /* DoughCalculator.xcdatamodeld */; };
 		0170B3892F674893004D506E /* DoughCalculatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3882F674893004D506E /* DoughCalculatorTests.swift */; };
 		0170B3932F674893004D506E /* DoughCalculatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3922F674893004D506E /* DoughCalculatorUITests.swift */; };
 		0170B3952F674893004D506E /* DoughCalculatorUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0170B3942F674893004D506E /* DoughCalculatorUITestsLaunchTests.swift */; };
-		AA0010022F674891004D506E /* DoughModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010012F674891004D506E /* DoughModels.swift */; };
-		AA0020022F674891004D506E /* CalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0020012F674891004D506E /* CalculatorView.swift */; };
-		AA0030022F674891004D506E /* RecipesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030012F674891004D506E /* RecipesView.swift */; };
 		AA0040022F674891004D506E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA0050012F674891004D506E /* Localizable.strings */; };
 		AA0080022F674891004D506E /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0080012F674891004D506E /* AppSettings.swift */; };
-		AA0090022F674891004D506E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0090012F674891004D506E /* SettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,10 +38,8 @@
 /* Begin PBXFileReference section */
 		0170B36D2F674891004D506E /* DoughCalculator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoughCalculator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0170B3702F674891004D506E /* DoughCalculatorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoughCalculatorApp.swift; sourceTree = "<group>"; };
-		0170B3722F674891004D506E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		0170B3742F674893004D506E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0170B3772F674893004D506E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		0170B3792F674893004D506E /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		0170B37C2F674893004D506E /* DoughCalculator.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DoughCalculator.xcdatamodel; sourceTree = "<group>"; };
 		0170B37E2F674893004D506E /* DoughCalculator.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DoughCalculator.entitlements; sourceTree = "<group>"; };
 		0170B3842F674893004D506E /* DoughCalculatorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DoughCalculatorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -55,14 +47,16 @@
 		0170B38E2F674893004D506E /* DoughCalculatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DoughCalculatorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0170B3922F674893004D506E /* DoughCalculatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoughCalculatorUITests.swift; sourceTree = "<group>"; };
 		0170B3942F674893004D506E /* DoughCalculatorUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoughCalculatorUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		AA0010012F674891004D506E /* DoughModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoughModels.swift; sourceTree = "<group>"; };
-		AA0020012F674891004D506E /* CalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculatorView.swift; sourceTree = "<group>"; };
-		AA0030012F674891004D506E /* RecipesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipesView.swift; sourceTree = "<group>"; };
 		AA0060012F674891004D506E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA0070012F674891004D506E /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AA0080012F674891004D506E /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
-		AA0090012F674891004D506E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		017ED6672FA66D0700438825 /* Models */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Models; sourceTree = "<group>"; };
+		017ED6682FA66D1600438825 /* Views */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Views; sourceTree = "<group>"; };
+		017ED6692FA66D3900438825 /* Persistence */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Persistence; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		0170B36A2F674891004D506E /* Frameworks */ = {
@@ -112,16 +106,13 @@
 		0170B36F2F674891004D506E /* DoughCalculator */ = {
 			isa = PBXGroup;
 			children = (
+				017ED6692FA66D3900438825 /* Persistence */,
+				017ED6682FA66D1600438825 /* Views */,
+				017ED6672FA66D0700438825 /* Models */,
 				0170B3702F674891004D506E /* DoughCalculatorApp.swift */,
-				0170B3722F674891004D506E /* ContentView.swift */,
-				AA0010012F674891004D506E /* DoughModels.swift */,
-				AA0020012F674891004D506E /* CalculatorView.swift */,
-				AA0030012F674891004D506E /* RecipesView.swift */,
 				AA0080012F674891004D506E /* AppSettings.swift */,
-				AA0090012F674891004D506E /* SettingsView.swift */,
 				AA0050012F674891004D506E /* Localizable.strings */,
 				0170B3742F674893004D506E /* Assets.xcassets */,
-				0170B3792F674893004D506E /* Persistence.swift */,
 				0170B37E2F674893004D506E /* DoughCalculator.entitlements */,
 				0170B37B2F674893004D506E /* DoughCalculator.xcdatamodeld */,
 				0170B3762F674893004D506E /* Preview Content */,
@@ -168,6 +159,11 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				017ED6672FA66D0700438825 /* Models */,
+				017ED6682FA66D1600438825 /* Views */,
+				017ED6692FA66D3900438825 /* Persistence */,
 			);
 			name = DoughCalculator;
 			productName = DoughCalculator;
@@ -286,15 +282,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0170B37A2F674893004D506E /* Persistence.swift in Sources */,
 				0170B37D2F674893004D506E /* DoughCalculator.xcdatamodeld in Sources */,
-				0170B3732F674891004D506E /* ContentView.swift in Sources */,
 				0170B3712F674891004D506E /* DoughCalculatorApp.swift in Sources */,
-				AA0010022F674891004D506E /* DoughModels.swift in Sources */,
-				AA0020022F674891004D506E /* CalculatorView.swift in Sources */,
-				AA0030022F674891004D506E /* RecipesView.swift in Sources */,
 				AA0080022F674891004D506E /* AppSettings.swift in Sources */,
-				AA0090022F674891004D506E /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
