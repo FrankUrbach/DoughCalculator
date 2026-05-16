@@ -17,6 +17,18 @@ enum YeastType: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum LeavenType: String, Codable, CaseIterable, Identifiable {
+    case yeast     = "Hefe"
+    case sourdough = "Sauerteig"
+    var id: String { rawValue }
+    var localizedName: String {
+        switch self {
+        case .yeast:     return String(localized: "leaven.yeast")
+        case .sourdough: return String(localized: "leaven.sourdough")
+        }
+    }
+}
+
 enum PrefermentType: String, Codable, CaseIterable, Identifiable {
     case poolish       = "Poolish"
     case biga          = "Biga"
@@ -185,6 +197,14 @@ final class DoughRecipe {
     var prefermentFlourPercentage: Double = 30.0
     var prefermentHydration: Double       = 100.0
     var prefermentYeastPercentage: Double = 0.1
+    var leavenType: LeavenType             = LeavenType.yeast
+    var sourdoughPercentage: Double        = 20.0
+    var sourdoughHydration: Double         = 100.0
+    var sourdoughTemperature: Double       = 25.0
+    var sourdoughActivity: Double          = 1.0
+    var sourdoughStarterPercentage: Double = 10.0
+    var sourdoughTargetHours: Double       = 6.0
+    var useYeastSafety: Bool               = false
     var additionalIngredientsData: Data    = Data()
     var notes: String                     = ""
     var savedDate: Date                   = Date()
@@ -266,6 +286,14 @@ final class DoughRecipe {
         prefermentFlourPercentage  = source.prefermentFlourPercentage
         prefermentHydration        = source.prefermentHydration
         prefermentYeastPercentage  = source.prefermentYeastPercentage
+        leavenType                 = source.leavenType
+        sourdoughPercentage        = source.sourdoughPercentage
+        sourdoughHydration         = source.sourdoughHydration
+        sourdoughTemperature       = source.sourdoughTemperature
+        sourdoughActivity          = source.sourdoughActivity
+        sourdoughStarterPercentage = source.sourdoughStarterPercentage
+        sourdoughTargetHours       = source.sourdoughTargetHours
+        useYeastSafety             = source.useYeastSafety
         additionalIngredientsData   = source.additionalIngredientsData
         notes                      = source.notes
     }
@@ -297,6 +325,14 @@ struct LegacyRecipe: Decodable {
     var prefermentFlourPercentage: Double = 30
     var prefermentHydration: Double = 100
     var prefermentYeastPercentage: Double = 0.1
+    var leavenType: LeavenType = .yeast
+    var sourdoughPercentage: Double = 20
+    var sourdoughHydration: Double = 100
+    var sourdoughTemperature: Double = 25
+    var sourdoughActivity: Double = 1.0
+    var sourdoughStarterPercentage: Double = 10
+    var sourdoughTargetHours: Double = 6
+    var useYeastSafety: Bool = false
     var notes: String = ""
     var savedDate: Date = Date()
 
@@ -307,6 +343,8 @@ struct LegacyRecipe: Decodable {
         case useColdFermentation, coldFermentationHours, warmPhaseHours
         case usePreferment, prefermentType, prefermentFlourPercentage
         case prefermentHydration, prefermentYeastPercentage
+        case leavenType, sourdoughPercentage, sourdoughHydration, sourdoughTemperature
+        case sourdoughActivity, sourdoughStarterPercentage, sourdoughTargetHours, useYeastSafety
         case notes, savedDate
     }
 
@@ -335,6 +373,14 @@ struct LegacyRecipe: Decodable {
         prefermentFlourPercentage = (try? c.decodeIfPresent(Double.self, forKey: .prefermentFlourPercentage)) ?? 30
         prefermentHydration       = (try? c.decodeIfPresent(Double.self, forKey: .prefermentHydration))       ?? 100
         prefermentYeastPercentage = (try? c.decodeIfPresent(Double.self, forKey: .prefermentYeastPercentage)) ?? 0.1
+        leavenType                 = (try? c.decodeIfPresent(LeavenType.self, forKey: .leavenType))                 ?? .yeast
+        sourdoughPercentage        = (try? c.decodeIfPresent(Double.self,     forKey: .sourdoughPercentage))        ?? 20
+        sourdoughHydration         = (try? c.decodeIfPresent(Double.self,     forKey: .sourdoughHydration))         ?? 100
+        sourdoughTemperature       = (try? c.decodeIfPresent(Double.self,     forKey: .sourdoughTemperature))       ?? 25
+        sourdoughActivity          = (try? c.decodeIfPresent(Double.self,     forKey: .sourdoughActivity))          ?? 1.0
+        sourdoughStarterPercentage = (try? c.decodeIfPresent(Double.self,     forKey: .sourdoughStarterPercentage)) ?? 10
+        sourdoughTargetHours       = (try? c.decodeIfPresent(Double.self,     forKey: .sourdoughTargetHours))       ?? 6
+        useYeastSafety             = (try? c.decodeIfPresent(Bool.self,       forKey: .useYeastSafety))             ?? false
         notes     = (try? c.decodeIfPresent(String.self, forKey: .notes))     ?? ""
         savedDate = (try? c.decodeIfPresent(Date.self,   forKey: .savedDate)) ?? Date()
     }
@@ -345,11 +391,18 @@ struct LegacyRecipe: Decodable {
 struct DoughCalculation {
     let recipe: DoughRecipe
 
+    /// Hefe-% die ins Mehlgewicht einfließen. Bei reinem Sauerteig (ohne Sicherheits-Hefe) = 0,
+    /// damit der totalFactor nicht durch ungenutzte Hefe verzerrt wird.
+    var effectiveYeastPercent: Double {
+        if recipe.leavenType == .sourdough && !recipe.useYeastSafety { return 0 }
+        return recipe.yeastPercentage
+    }
+
     private var totalFactor: Double {
         1
         + recipe.hydration / 100
         + recipe.saltPercentage / 100
-        + recipe.yeastPercentage / 100
+        + effectiveYeastPercent / 100
         + recipe.additionalIngredientsPercentage / 100
     }
 
@@ -360,7 +413,7 @@ struct DoughCalculation {
     var flourWeight: Double { productionWeight / max(totalFactor, 0.01) }
     var waterWeight: Double { flourWeight * recipe.hydration / 100 }
     var saltWeight:  Double { flourWeight * recipe.saltPercentage / 100 }
-    var yeastWeight: Double { flourWeight * recipe.yeastPercentage / 100 }
+    var yeastWeight: Double { flourWeight * effectiveYeastPercent / 100 }
     var sugarWeight: Double { flourWeight * recipe.sugarPercentage / 100 }
     var fatWeight:   Double { flourWeight * recipe.fatPercentage / 100 }
     var additionalIngredientAmounts: [IngredientAmount] {
@@ -400,12 +453,44 @@ struct DoughCalculation {
         return max(0.01, min(2.0 / denom, 5.0))
     }
 
-    // Geschätzte Gehzeit. Referenz: 1 % Frischhefe @ 20 °C ≈ 2 h. Q10 ≈ 2,0.
+    /// Frischhefe-Äquivalent in % vom Gesamtmehl. Bei Sauerteig wird der
+    /// Sauerteig-Anteil mit dem Aktivitätsfaktor in eine Hefe-Wirkung umgerechnet.
+    var freshYeastEquivalentPercent: Double {
+        var eq: Double = 0
+        let safetyYeastFreshPercent = flourWeight > 0
+            ? yeastAmount(as: .fresh) / flourWeight * 100
+            : 0
+        switch recipe.leavenType {
+        case .yeast:
+            eq = safetyYeastFreshPercent
+        case .sourdough:
+            eq = recipe.sourdoughPercentage * recipe.sourdoughActivity * 0.01
+            if recipe.useYeastSafety {
+                eq += safetyYeastFreshPercent
+            }
+        }
+        return eq
+    }
+
+    /// Bezugstemperatur für die Gärzeit. Bei Sauerteig wird die Reifetemperatur verwendet.
+    var fermentationReferenceTemperature: Double {
+        recipe.leavenType == .sourdough ? recipe.sourdoughTemperature : recipe.fermentationTemperature
+    }
+
+    // Geschätzte Gehzeit. Referenz: 1 % Frischhefe-Äquivalent @ 20 °C ≈ 2 h. Q10 ≈ 2,0.
     var estimatedFermentationHours: Double {
-        let freshPercent = flourWeight > 0 ? yeastAmount(as: .fresh) / flourWeight * 100 : 0
+        let freshPercent = freshYeastEquivalentPercent
         guard freshPercent > 0 else { return 0 }
-        let t = 2.0 * (1.0 / freshPercent) * pow(2.0, (20.0 - recipe.fermentationTemperature) / 10.0)
+        let t = 2.0 * (1.0 / freshPercent) * pow(2.0, (20.0 - fermentationReferenceTemperature) / 10.0)
         return max(0.25, min(t, 999))
+    }
+
+    /// Inverse: welcher Sauerteig-Anteil führt bei aktueller Aktivität und Temperatur zur Zielzeit?
+    func recommendedSourdoughPercent(forHours target: Double) -> Double {
+        let t = max(target, 0.25)
+        let freshEq = 2.0 * pow(2.0, (20.0 - fermentationReferenceTemperature) / 10.0) / t
+        let raw = freshEq / max(recipe.sourdoughActivity, 0.01) * 100
+        return max(5, min(40, raw))
     }
 
     var estimatedFermentationFormatted: String {
@@ -430,9 +515,36 @@ struct DoughCalculation {
         recipe.usePreferment ? prefermentFlourWeight * recipe.prefermentYeastPercentage / 100 : 0
     }
 
-    // Hauptteig (Backtag)
-    var mainDoughFlour: Double { flourWeight - prefermentFlourWeight }
-    var mainDoughWater: Double { waterWeight - prefermentWaterWeight }
+    // MARK: Sauerteig
+
+    var isSourdough: Bool { recipe.leavenType == .sourdough }
+
+    var sourdoughFlourWeight: Double {
+        isSourdough ? flourWeight * recipe.sourdoughPercentage / 100 : 0
+    }
+    var sourdoughWaterWeight: Double {
+        sourdoughFlourWeight * recipe.sourdoughHydration / 100
+    }
+    var sourdoughTotalWeight: Double {
+        sourdoughFlourWeight + sourdoughWaterWeight
+    }
+    /// Anstellgut (Inokulum), das in den Sauerteig kommt.
+    var sourdoughStarterWeight: Double {
+        sourdoughTotalWeight * recipe.sourdoughStarterPercentage / 100
+    }
+    /// Mehl, das zur Auffrischung des Sauerteigs zugegeben wird (Stufe 1).
+    var sourdoughBuildFlour: Double {
+        let netto = max(0, sourdoughTotalWeight - sourdoughStarterWeight)
+        return netto * 100 / (100 + recipe.sourdoughHydration)
+    }
+    /// Wasser, das zur Auffrischung des Sauerteigs zugegeben wird (Stufe 1).
+    var sourdoughBuildWater: Double {
+        max(0, sourdoughTotalWeight - sourdoughStarterWeight) - sourdoughBuildFlour
+    }
+
+    // Hauptteig (Backtag) — Vorteig UND Sauerteig werden vom Gesamtteig abgezogen.
+    var mainDoughFlour: Double { flourWeight - prefermentFlourWeight - sourdoughFlourWeight }
+    var mainDoughWater: Double { waterWeight - prefermentWaterWeight - sourdoughWaterWeight }
 
     var mainDoughYeastFresh:   Double { max(0, yeastAmount(as: .fresh) - prefermentYeastWeight) }
     var mainDoughYeastDry:     Double { mainDoughYeastFresh / 3 }

@@ -95,6 +95,38 @@
 "preferment.biga" = "Biga";
 "preferment.pateFermentee" = "Pâte fermentée";
 
+/* Leaven type */
+"section.leaven" = "Triebmittel";
+"leaven.yeast" = "Hefe";
+"leaven.sourdough" = "Sauerteig";
+"yeastSafety" = "Sicherheits-Hefe ergänzen";
+
+/* Sourdough section */
+"section.sourdough" = "Sauerteig";
+"sourdough.share" = "Sauerteig-Anteil";
+"sourdough.hydration" = "Hydration";
+"sourdough.temperature" = "Reifetemperatur";
+"sourdough.activity" = "Aktivität";
+"sourdough.activity.low" = "mild";
+"sourdough.activity.high" = "aktiv";
+"sourdough.starter" = "Anstellgut-Anteil";
+"sourdough.disabledWhileSourdough" = "Bei Sauerteig deaktiviert";
+
+/* Sourdough build plan */
+"section.sourdoughBuild" = "Sauerteig-Aufbau";
+"sourdough.build.starter" = "Anstellgut";
+"sourdough.build.flour" = "Mehl";
+"sourdough.build.water" = "Wasser";
+"sourdough.build.ripen" = "Reifezeit";
+
+/* Sourdough recommendation */
+"section.sourdoughRecommend" = "Empfehlung";
+"sourdough.targetHours" = "Zielzeit";
+"sourdough.recommendedShare" = "Empfohlener Anteil";
+
+/* Safety yeast */
+"Safety Yeast" = "Sicherheits-Hefe";
+
 /* Dough types */
 "dough.custom" = "Benutzerdefiniert";
 "dough.pizzaNeapolitan" = "Pizza Napoletana";

@@ -83,10 +83,12 @@ struct CalculatorView: View {
                     case .einstellungen:
                         teigartSection
                         teigSection(showHydration: true)
+                        triebmittelSection
                         zutatenSection
                         if showOptional { optionalSection }
                         gaerungSection
                         if recipe.usePreferment { vorteigSection }
+                        if recipe.leavenType == .sourdough { sauerteigSection }
 
                     case .ergebnis:
                         teigSection(showHydration: false)
@@ -209,25 +211,47 @@ struct CalculatorView: View {
         }
     }
 
+    @ViewBuilder private var triebmittelSection: some View {
+        Section("section.leaven") {
+            Picker("Type", selection: $recipe.leavenType) {
+                ForEach(LeavenType.allCases) { Text($0.localizedName).tag($0) }
+            }
+            .onChange(of: recipe.leavenType) { _, new in
+                if new == .sourdough { recipe.usePreferment = false }
+            }
+            if recipe.leavenType == .sourdough {
+                Toggle("yeastSafety", isOn: $recipe.useYeastSafety)
+                if recipe.useYeastSafety {
+                    Picker("Yeast Type", selection: $recipe.yeastType) {
+                        ForEach(YeastType.allCases) { Text($0.localizedName).tag($0) }
+                    }
+                    pctStepper("Safety Yeast", value: $recipe.yeastPercentage, in: 0.01...1, step: 0.05)
+                }
+            }
+        }
+    }
+
     @ViewBuilder private var zutatenSection: some View {
         Section("Ingredients") {
             pctStepper("Salt", value: $recipe.saltPercentage, in: 0...5, step: 0.1)
-            Picker("Yeast Type", selection: $recipe.yeastType) {
-                ForEach(YeastType.allCases) { Text($0.localizedName).tag($0) }
-            }
-            .onChange(of: recipe.yeastType) { _, _ in
-                if recipe.useColdFermentation { updateYeastForCold() }
-            }
-            if recipe.useColdFermentation {
-                HStack {
-                    Label("Yeast Amount (auto)", systemImage: "lock")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Text(formatPct(recipe.yeastPercentage))
-                        .foregroundStyle(.secondary).monospacedDigit()
+            if recipe.leavenType == .yeast {
+                Picker("Yeast Type", selection: $recipe.yeastType) {
+                    ForEach(YeastType.allCases) { Text($0.localizedName).tag($0) }
                 }
-            } else {
-                pctStepper("Yeast Amount", value: $recipe.yeastPercentage, in: 0.01...5, step: 0.1)
+                .onChange(of: recipe.yeastType) { _, _ in
+                    if recipe.useColdFermentation { updateYeastForCold() }
+                }
+                if recipe.useColdFermentation {
+                    HStack {
+                        Label("Yeast Amount (auto)", systemImage: "lock")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(formatPct(recipe.yeastPercentage))
+                            .foregroundStyle(.secondary).monospacedDigit()
+                    }
+                } else {
+                    pctStepper("Yeast Amount", value: $recipe.yeastPercentage, in: 0.01...5, step: 0.1)
+                }
             }
             Toggle("More Ingredients", isOn: $showOptional)
         }
@@ -314,6 +338,38 @@ struct CalculatorView: View {
             }
 
             Toggle("Use Pre-ferment", isOn: $recipe.usePreferment)
+                .disabled(recipe.leavenType == .sourdough)
+        }
+    }
+
+    @ViewBuilder private var sauerteigSection: some View {
+        Section("section.sourdough") {
+            pctStepper("sourdough.share",     value: $recipe.sourdoughPercentage, in: 5...40,   step: 1)
+            pctStepper("sourdough.hydration", value: $recipe.sourdoughHydration,  in: 50...150, step: 5)
+            Stepper(value: $recipe.sourdoughTemperature, in: 22...28, step: 1) {
+                HStack {
+                    Text("sourdough.temperature")
+                    Spacer()
+                    Text(UnitFormatter.formatTemperature(recipe.sourdoughTemperature, system: unitSystem))
+                        .foregroundStyle(.secondary).monospacedDigit()
+                }
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("sourdough.activity")
+                    Spacer()
+                    Text(String(format: "%.1f", recipe.sourdoughActivity))
+                        .foregroundStyle(.secondary).monospacedDigit()
+                }
+                Slider(value: $recipe.sourdoughActivity, in: 0.5...1.5, step: 0.1) {
+                    Text("sourdough.activity")
+                } minimumValueLabel: {
+                    Text("sourdough.activity.low").font(.caption2).foregroundStyle(.secondary)
+                } maximumValueLabel: {
+                    Text("sourdough.activity.high").font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+            pctStepper("sourdough.starter", value: $recipe.sourdoughStarterPercentage, in: 5...25, step: 1)
         }
     }
 
@@ -334,7 +390,9 @@ struct CalculatorView: View {
     // MARK: - Result section
 
     @ViewBuilder private var ergebnisSection: some View {
-        if recipe.usePreferment {
+        if recipe.leavenType == .sourdough {
+            sourdoughResultSections
+        } else if recipe.usePreferment {
             let header = "\(String(localized: "Pre-ferment")): \(recipe.prefermentType.localizedName)"
             Section(header) {
                 resultRow("Flour",       calc.prefermentFlourWeight)
@@ -372,6 +430,64 @@ struct CalculatorView: View {
                 lossRow
                 fermentationRow
             }
+        }
+    }
+
+    @ViewBuilder private var sourdoughResultSections: some View {
+        Section("section.sourdough") {
+            resultRow("Flour", calc.sourdoughFlourWeight)
+            resultRow("Water", calc.sourdoughWaterWeight)
+            HStack {
+                Text("Total Dough")
+                Spacer()
+                Text(UnitFormatter.formatWeight(calc.sourdoughTotalWeight, system: unitSystem))
+                    .foregroundStyle(.secondary).monospacedDigit()
+            }
+        }
+        Section("section.sourdoughBuild") {
+            resultRow("sourdough.build.starter", calc.sourdoughStarterWeight)
+            resultRow("sourdough.build.flour",   calc.sourdoughBuildFlour)
+            resultRow("sourdough.build.water",   calc.sourdoughBuildWater)
+            HStack {
+                Label("sourdough.build.ripen", systemImage: "timer")
+                Spacer()
+                Text(calc.estimatedFermentationFormatted)
+                    .foregroundStyle(.orange).monospacedDigit()
+            }
+        }
+        Section("Main Dough (Baking Day)") {
+            resultRow("Flour", calc.mainDoughFlour)
+            resultRow("Water", calc.mainDoughWater)
+            resultRow("Salt",  calc.saltWeight)
+            if recipe.useYeastSafety {
+                switch recipe.yeastType {
+                case .fresh:   resultRow("Fresh Yeast",  calc.yeastAmount(as: .fresh))
+                case .dry:     resultRow("Dry Yeast",    calc.yeastAmount(as: .dry))
+                case .instant: resultRow("Instant Yeast", calc.yeastAmount(as: .instant))
+                }
+            }
+            additionalIngredientRows
+        }
+        Section("section.sourdoughRecommend") {
+            Stepper(value: $recipe.sourdoughTargetHours, in: 1...24, step: 1) {
+                HStack {
+                    Text("sourdough.targetHours")
+                    Spacer()
+                    Text(formatHours(recipe.sourdoughTargetHours))
+                        .foregroundStyle(.secondary).monospacedDigit()
+                }
+            }
+            HStack {
+                Text("sourdough.recommendedShare")
+                Spacer()
+                Text(formatPct(calc.recommendedSourdoughPercent(forHours: recipe.sourdoughTargetHours)))
+                    .foregroundStyle(.secondary).monospacedDigit()
+            }
+        }
+        Section {
+            totalRow
+            lossRow
+            fermentationRow
         }
     }
 
@@ -488,6 +604,7 @@ struct CalculatorView: View {
     // MARK: - Cold fermentation
 
     private func updateYeastForCold() {
+        guard recipe.leavenType == .yeast else { return }
         let freshPct = DoughCalculation(recipe: recipe).recommendedFreshYeastPercent
         switch recipe.yeastType {
         case .fresh:   recipe.yeastPercentage = freshPct
